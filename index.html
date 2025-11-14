@@ -145,7 +145,10 @@ const winScreen = document.getElementById("winScreen");
 const powerUpBtn = document.getElementById("powerUpBtn");
 const transition = document.getElementById("transition");
 
-// Minigames für jedes Level
+// Post-Pool pro Level, damit keine Doppelungen
+let postPool = [];
+
+// Minigames pro Level
 const minigames = {
   1: [
     () => {
@@ -233,24 +236,24 @@ const minigames = {
   ]
 };
 
-// Levels mit Schwierigkeitsgrad
+// Levels mit Schwierigkeitsgrad und Effekten
 const levels = {
   1: {
     story:"Level 1: Dein Feed wirkt einseitig. Alles wiederholt sich...",
     posts:[
-      {text:"Ein Meme, das du schon hundertmal gesehen hast.", type:"same", effect:10},
-      {text:"Ein belangloser Clip ohne Inhalt.", type:"same", effect:10},
-      {text:"Ein informativer Lernbeitrag.", type:"break", effect:-15},
-      {text:"Ein sachlicher Post über ein neues Thema.", type:"break", effect:-15}
+      {text:"Ein Meme, das du schon hundertmal gesehen hast.", effect:10},
+      {text:"Ein belangloser Clip ohne Inhalt.", effect:10},
+      {text:"Ein informativer Lernbeitrag.", effect:-15},
+      {text:"Ein sachlicher Post über ein neues Thema.", effect:-15}
     ]
   },
   2: {
     story:"Level 2: Der Algorithmus setzt auf starke Emotionen...",
     posts:[
-      {text:"Empörungspost: 'Das ist einfach unglaublich!'", type:"controversial", effect:20},
-      {text:"Clickbait: 'Du wirst NICHT glauben, was als Nächstes passiert!'", type:"controversial", effect:20},
-      {text:"Ein ruhiger Informationsartikel.", type:"break", effect:-15},
-      {text:"Ein objektiver Nachrichtenausschnitt.", type:"break", effect:-15}
+      {text:"Empörungspost: 'Das ist einfach unglaublich!'", effect:20},
+      {text:"Clickbait: 'Du wirst NICHT glauben, was als Nächstes passiert!'", effect:20},
+      {text:"Ein ruhiger Informationsartikel.", effect:-15},
+      {text:"Ein objektiver Nachrichtenausschnitt.", effect:-15}
     ]
   },
   3: {
@@ -259,13 +262,17 @@ const levels = {
   }
 };
 
+// Pool initialisieren
+function initPostPool(){
+  postPool = [...levels[level].posts];
+}
+
 function startLevel(){
   transition.style.display="flex";
   transition.textContent="LEVEL "+level;
   setTimeout(()=>transition.style.display="none",1200);
-  let data=levels[level];
   storyBox.style.display="block";
-  storyBox.textContent=data.story;
+  storyBox.textContent=levels[level].story;
   levelInfo.textContent="Level "+level;
 
   if(level===3){
@@ -274,23 +281,25 @@ function startLevel(){
     return;
   }
 
+  initPostPool();
   generateFeed();
   powerUpBtn.style.display="block";
   powerUpBtn.disabled=false;
   powerUpBtn.textContent="🔧 Power-Up einsetzen";
 }
 
+// Generiere neue Antwortmöglichkeiten ohne Wiederholung
 function generateFeed(){
-  let posts=[...levels[level].posts];
+  if(postPool.length===0) initPostPool();
   feed.innerHTML="";
-  feed.style.display="block";
-
-  for(let i=posts.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [posts[i],posts[j]]=[posts[j],posts[i]];
+  let postsToShow=[];
+  let count = Math.min(3, postPool.length);
+  for(let i=0;i<count;i++){
+    let idx = Math.floor(Math.random()*postPool.length);
+    postsToShow.push(postPool[idx]);
+    postPool.splice(idx,1); // aus Pool entfernen
   }
-
-  posts.forEach(post=>{
+  postsToShow.forEach(post=>{
     let div=document.createElement("div");
     div.className="post fadeIn";
     div.textContent=post.text;
@@ -312,7 +321,7 @@ function handlePostClick(post){
   bubble+=post.effect;
   bubble=Math.min(100,Math.max(0,bubble));
   bubbleValue.textContent=bubble;
-  generateFeed(); // Posts erneuern nach Klick
+  generateFeed(); // Neue Posts ersetzen alte
   checkProgress();
 }
 
