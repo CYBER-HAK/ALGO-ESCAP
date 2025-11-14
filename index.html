@@ -14,18 +14,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden;
 }
 
 h1 {
   margin-top: 30px;
   font-size: 2.8em;
   text-shadow: 0 0 15px #00ffaa;
-  animation: fadeIn 1s ease;
 }
-
-.fadeIn { animation: fadeIn 0.8s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
 
 .levelTransition {
   position: fixed;
@@ -37,7 +32,6 @@ h1 {
   align-items:center;
   font-size:3em;
   color:#00ffaa;
-  animation:fadeIn 1s forwards;
   z-index:999;
 }
 
@@ -49,7 +43,7 @@ h1 {
   border-radius:12px;
   font-size:1.2em;
   text-align:center;
-  display:none;
+  display:block;
 }
 
 #levelInfo, #stats {
@@ -85,7 +79,6 @@ h1 {
   border-radius:10px;
   font-size:1.1em;
   cursor:pointer;
-  display:none;
 }
 
 #minigameBox {
@@ -135,6 +128,7 @@ h1 {
 <script>
 let bubble = 80;
 let level = 1;
+
 const bubbleValue = document.getElementById("bubbleValue");
 const levelInfo = document.getElementById("levelInfo");
 const storyBox = document.getElementById("storyBox");
@@ -144,7 +138,14 @@ const winScreen = document.getElementById("winScreen");
 const powerUpBtn = document.getElementById("powerUpBtn");
 const transition = document.getElementById("transition");
 
-// Post-Pools für Levels
+// Storytexte pro Level
+const levels = {
+  1: { story:"Level 1: Dein Feed wirkt einseitig. Alles wiederholt sich..." },
+  2: { story:"Level 2: Der Algorithmus setzt auf starke Emotionen..." },
+  3: { story:"Finales Level! Nur ein Minigame kann dich befreien..." }
+};
+
+// Posts pro Level
 const levelPosts = {
   1: [
     {text:"Ein Meme, das du schon hundertmal gesehen hast.", effect:10},
@@ -167,6 +168,7 @@ const levelPosts = {
 
 let postPool = [];
 
+// Minigames pro Level
 const minigames = {
   1: [
     () => {
@@ -174,8 +176,7 @@ const minigames = {
       let options=["Fake-News","Clickbait","Neutral","Reißerisch"];
       let correct=2;
       options.forEach((opt,i)=>{
-        let btn=document.createElement("button");
-        btn.className="miniBtn"; btn.textContent=opt;
+        let btn=document.createElement("button"); btn.className="miniBtn"; btn.textContent=opt;
         btn.onclick=()=> i===correct? showWin():showGameOver();
         minigameBox.appendChild(btn);
       });
@@ -232,17 +233,20 @@ const minigames = {
   ]
 };
 
+// Pool initialisieren
 function initPostPool(){
   postPool = [...levelPosts[level]];
 }
 
+// Level starten
 function startLevel(){
   transition.style.display="flex";
   transition.textContent="LEVEL "+level;
   setTimeout(()=>transition.style.display="none",1200);
+
   storyBox.style.display="block";
-  storyBox.textContent=levels[level]?.story||"";
-  levelInfo.textContent="Level "+level;
+  storyBox.textContent = levels[level].story;
+  levelInfo.textContent = "Level "+level;
 
   if(level===3){
     feed.style.display="none";
@@ -257,6 +261,7 @@ function startLevel(){
   powerUpBtn.textContent="🔧 Power-Up einsetzen";
 }
 
+// Neue Posts generieren
 function generateFeed(){
   if(postPool.length<3) initPostPool();
   feed.innerHTML="";
@@ -271,13 +276,14 @@ function generateFeed(){
   }
   postsToShow.forEach(post=>{
     let div=document.createElement("div");
-    div.className="post fadeIn";
+    div.className="post";
     div.textContent=post.text;
     div.addEventListener("click",()=>handlePostClick(post));
     feed.appendChild(div);
   });
 }
 
+// Power-Up
 powerUpBtn.addEventListener("click",()=>{
   bubble-=25;
   bubble=Math.max(0,bubble);
@@ -287,6 +293,7 @@ powerUpBtn.addEventListener("click",()=>{
   checkProgress();
 });
 
+// Post klicken
 function handlePostClick(post){
   bubble+=post.effect;
   bubble=Math.min(100,Math.max(0,bubble));
@@ -295,11 +302,13 @@ function handlePostClick(post){
   checkProgress();
 }
 
+// Fortschritt prüfen
 function checkProgress(){
   if(bubble>=100){ showGameOver(); } 
   else if(bubble<=0){ nextLevel(); }
 }
 
+// Nächstes Level
 function nextLevel(){
   level++;
   bubble=80;
@@ -310,6 +319,7 @@ function nextLevel(){
   setTimeout(startLevel,500);
 }
 
+// Minigame starten
 function startRandomMinigame(){
   minigameBox.style.display="block";
   let options=minigames[level];
@@ -317,18 +327,17 @@ function startRandomMinigame(){
   pick();
 }
 
+// Gewinn / Game Over
 function showWin(){
   minigameBox.innerHTML="<h2>✔ Du hast das Minigame gewonnen!</h2>";
   setTimeout(nextLevel,1200);
 }
-
 function showGameOver(){
   feed.style.display="none";
   minigameBox.style.display="none";
   storyBox.innerHTML="<h2 style='color:red;'>GAME OVER – der Algorithmus hat dich komplett eingeschlossen!</h2>";
   setTimeout(()=>{level=1; bubble=80; bubbleValue.textContent=bubble; startLevel();},2000);
 }
-
 function showFinalWin(){
   winScreen.style.display="block";
   winScreen.innerHTML="🎉 <br><br><strong>DU BIST ENTKOMMEN!</strong><br><br>Der Algorithmus hat keine Macht mehr über dich.";
