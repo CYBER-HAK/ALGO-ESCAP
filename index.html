@@ -22,19 +22,6 @@ h1 {
   text-shadow: 0 0 15px #00ffaa;
 }
 
-.levelTransition {
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:black;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  font-size:3em;
-  color:#00ffaa;
-  z-index:999;
-}
-
 #storyBox {
   width:80%;
   margin-top:20px;
@@ -115,7 +102,6 @@ h1 {
 </head>
 <body>
 
-<div id="transition" class="levelTransition">LEVEL START</div>
 <h1>ALGO ESCAPE</h1>
 <div id="storyBox"></div>
 <div id="levelInfo"></div>
@@ -128,6 +114,7 @@ h1 {
 <script>
 let bubble = 80;
 let level = 1;
+let clickCount = 0; // Zählt Post-Klicks für zufällige Minigames
 
 const bubbleValue = document.getElementById("bubbleValue");
 const levelInfo = document.getElementById("levelInfo");
@@ -136,146 +123,132 @@ const feed = document.getElementById("feed");
 const minigameBox = document.getElementById("minigameBox");
 const winScreen = document.getElementById("winScreen");
 const powerUpBtn = document.getElementById("powerUpBtn");
-const transition = document.getElementById("transition");
 
-// Storytexte pro Level
+// Storytexte
 const levels = {
   1: { story:"Level 1: Dein Feed wirkt einseitig. Alles wiederholt sich..." },
   2: { story:"Level 2: Der Algorithmus setzt auf starke Emotionen..." },
   3: { story:"Finales Level! Nur ein Minigame kann dich befreien..." }
 };
 
-// Posts pro Level
+// 60 verschiedene Posts pro Level
 const levelPosts = {
-  1: [
-    {text:"Ein Meme, das du schon hundertmal gesehen hast.", effect:10},
-    {text:"Ein belangloser Clip ohne Inhalt.", effect:10},
-    {text:"Ein informativer Lernbeitrag.", effect:-15},
-    {text:"Ein sachlicher Post über ein neues Thema.", effect:-15},
-    {text:"Ein kurzer Tipp zum Lernen.", effect:-10},
-    {text:"Ein interessantes Bild aus der Wissenschaft.", effect:-15},
-  ],
-  2: [
-    {text:"Empörungspost: 'Das ist unglaublich!'", effect:20},
-    {text:"Clickbait: 'Du wirst NICHT glauben, was passiert!'", effect:20},
-    {text:"Ein ruhiger Informationsartikel.", effect:-15},
-    {text:"Ein objektiver Nachrichtenausschnitt.", effect:-15},
-    {text:"Analytischer Blog-Beitrag.", effect:-10},
-    {text:"Fachlicher Kommentar.", effect:-15},
-  ],
-  3: [] // nur Minigames
+  1: Array.from({length:60},(_,i)=>({text:`Level 1 Post ${i+1}`, effect: i%2===0 ? 10 : -15})),
+  2: Array.from({length:60},(_,i)=>({text:`Level 2 Post ${i+1}`, effect: i%3===0 ? 20 : -15})),
+  3: [] // Nur Minigames
 };
 
 let postPool = [];
+let currentPosts = [];
 
-// Minigames pro Level
+// Minigames
 const minigames = {
   1: [
     () => {
+      minigameBox.style.display="block";
       minigameBox.innerHTML="<h2>Finde den echten Post!</h2>";
-      let options=["Fake-News","Clickbait","Neutral","Reißerisch"];
-      let correct=2;
+      const options = ["Fake-News","Clickbait","Neutral","Reißerisch"];
+      const correct=2;
       options.forEach((opt,i)=>{
-        let btn=document.createElement("button"); btn.className="miniBtn"; btn.textContent=opt;
-        btn.onclick=()=> i===correct? showWin():showGameOver();
+        const btn=document.createElement("button");
+        btn.className="miniBtn"; btn.textContent=opt;
+        btn.onclick=()=> i===correct ? showWin() : showGameOver();
         minigameBox.appendChild(btn);
       });
     },
     () => {
+      minigameBox.style.display="block";
       minigameBox.innerHTML="<h2>Klicke 5× in 5 Sekunden!</h2>";
       let count=0;
-      let btn=document.createElement("button");
+      const btn=document.createElement("button");
       btn.className="miniBtn"; btn.textContent="KLICK!";
-      btn.onclick=()=>{count++; btn.textContent=`KLICK! (${count}/5)`; if(count>=5) showWin();};
+      btn.onclick=()=>{
+        count++;
+        btn.textContent=`KLICK! (${count}/5)`;
+        if(count>=5) showWin();
+      };
       minigameBox.appendChild(btn);
       setTimeout(()=>{if(count<5) showGameOver();},5000);
     }
   ],
   2: [
     () => {
+      minigameBox.style.display="block";
       minigameBox.innerHTML="<h2>Klicke 7× in 7 Sekunden!</h2>";
       let count=0;
-      let btn=document.createElement("button");
+      const btn=document.createElement("button");
       btn.className="miniBtn"; btn.textContent="KLICK!";
-      btn.onclick=()=>{count++; btn.textContent=`KLICK! (${count}/7)`; if(count>=7) showWin();};
+      btn.onclick=()=>{
+        count++; btn.textContent=`KLICK! (${count}/7)`; if(count>=7) showWin();
+      };
       minigameBox.appendChild(btn);
       setTimeout(()=>{if(count<7) showGameOver();},7000);
     },
     () => {
+      minigameBox.style.display="block";
       minigameBox.innerHTML="<h2>Finde 2 echte Posts!</h2>";
-      let options=["Clickbait","Neutral","Neutral","Fake-News"];
-      let correct=[1,2]; let selected=0;
+      const options = ["Clickbait","Neutral","Neutral","Fake-News"];
+      const correct = [1,2]; let selected=0;
       options.forEach((opt,i)=>{
-        let btn=document.createElement("button"); btn.className="miniBtn"; btn.textContent=opt;
-        btn.onclick=()=>{if(correct.includes(i)){selected++; if(selected===2) showWin();}else showGameOver();};
+        const btn=document.createElement("button");
+        btn.className="miniBtn"; btn.textContent=opt;
+        btn.onclick=()=>{
+          if(correct.includes(i)){ selected++; if(selected===2) showWin(); }
+          else showGameOver();
+        };
         minigameBox.appendChild(btn);
       });
     }
   ],
   3: [
     () => {
+      minigameBox.style.display="block";
       minigameBox.innerHTML="<h2>Klicke 10× in 10 Sekunden!</h2>";
-      let count=0; let btn=document.createElement("button");
+      let count=0; const btn=document.createElement("button");
       btn.className="miniBtn"; btn.textContent="KLICK!";
-      btn.onclick=()=>{count++; btn.textContent=`KLICK! (${count}/10)`; if(count>=10) showWin();};
+      btn.onclick=()=>{
+        count++; btn.textContent=`KLICK! (${count}/10)`; if(count>=10) showWin();
+      };
       minigameBox.appendChild(btn);
       setTimeout(()=>{if(count<10) showGameOver();},10000);
-    },
-    () => {
-      minigameBox.innerHTML="<h2>Finde 3 echte Posts!</h2>";
-      let options=["Clickbait","Neutral","Neutral","Neutral","Fake-News"];
-      let correct=[1,2,3]; let selected=0;
-      options.forEach((opt,i)=>{let btn=document.createElement("button"); btn.className="miniBtn"; btn.textContent=opt;
-        btn.onclick=()=>{if(correct.includes(i)){selected++; if(selected===3) showWin();} else showGameOver();};
-        minigameBox.appendChild(btn);
-      });
     }
   ]
 };
 
-// Pool initialisieren
+// Funktionen
 function initPostPool(){
   postPool = [...levelPosts[level]];
 }
 
-// Level starten
 function startLevel(){
-  transition.style.display="flex";
-  transition.textContent="LEVEL "+level;
-  setTimeout(()=>transition.style.display="none",1200);
-
-  storyBox.style.display="block";
+  clickCount=0;
   storyBox.textContent = levels[level].story;
   levelInfo.textContent = "Level "+level;
-
-  if(level===3){
-    feed.style.display="none";
-    startRandomMinigame();
-    return;
-  }
-
-  initPostPool();
-  generateFeed();
+  bubbleValue.textContent = bubble;
   powerUpBtn.style.display="block";
   powerUpBtn.disabled=false;
   powerUpBtn.textContent="🔧 Power-Up einsetzen";
+  minigameBox.style.display="none";
+  feed.style.display="block";
+  initPostPool();
+  generateFeed();
 }
 
-// Neue Posts generieren
+// 3 Posts ziehen
 function generateFeed(){
   if(postPool.length<3) initPostPool();
   feed.innerHTML="";
-  let postsToShow=[];
+  currentPosts=[];
   let usedIndices=[];
-  while(postsToShow.length<3){
+  while(currentPosts.length<3){
     let idx=Math.floor(Math.random()*postPool.length);
     if(!usedIndices.includes(idx)){
-      postsToShow.push(postPool[idx]);
+      currentPosts.push(postPool[idx]);
       usedIndices.push(idx);
     }
   }
-  postsToShow.forEach(post=>{
-    let div=document.createElement("div");
+  currentPosts.forEach(post=>{
+    const div=document.createElement("div");
     div.className="post";
     div.textContent=post.text;
     div.addEventListener("click",()=>handlePostClick(post));
@@ -283,7 +256,6 @@ function generateFeed(){
   });
 }
 
-// Power-Up
 powerUpBtn.addEventListener("click",()=>{
   bubble-=25;
   bubble=Math.max(0,bubble);
@@ -293,51 +265,57 @@ powerUpBtn.addEventListener("click",()=>{
   checkProgress();
 });
 
-// Post klicken
 function handlePostClick(post){
   bubble+=post.effect;
   bubble=Math.min(100,Math.max(0,bubble));
   bubbleValue.textContent=bubble;
-  generateFeed();
+  clickCount++;
+  
+  // Zufälliges Minigame nach 2-4 Klicks
+  if(clickCount===2+Math.floor(Math.random()*3)){
+    startRandomMinigame();
+  } else {
+    generateFeed();
+  }
+  
   checkProgress();
 }
 
-// Fortschritt prüfen
 function checkProgress(){
-  if(bubble>=100){ showGameOver(); } 
-  else if(bubble<=0){ nextLevel(); }
+  if(bubble>=100) showGameOver();
+  else if(bubble<=0) nextLevel();
 }
 
-// Nächstes Level
 function nextLevel(){
   level++;
   bubble=80;
-  bubbleValue.textContent=bubble;
   if(level>3){ showFinalWin(); return; }
-  feed.style.display="none";
-  minigameBox.style.display="none";
-  setTimeout(startLevel,500);
+  startLevel();
 }
 
-// Minigame starten
 function startRandomMinigame(){
+  feed.style.display="none";
   minigameBox.style.display="block";
   let options=minigames[level];
   let pick=options[Math.floor(Math.random()*options.length)];
   pick();
 }
 
-// Gewinn / Game Over
 function showWin(){
-  minigameBox.innerHTML="<h2>✔ Du hast das Minigame gewonnen!</h2>";
-  setTimeout(nextLevel,1200);
+  minigameBox.style.display="none";
+  feed.style.display="block";
+  generateFeed();
 }
+
 function showGameOver(){
   feed.style.display="none";
   minigameBox.style.display="none";
-  storyBox.innerHTML="<h2 style='color:red;'>GAME OVER – der Algorithmus hat dich komplett eingeschlossen!</h2>";
-  setTimeout(()=>{level=1; bubble=80; bubbleValue.textContent=bubble; startLevel();},2000);
+  storyBox.innerHTML="<h2 style='color:red;'>GAME OVER – der Algorithmus hat dich eingeschlossen!</h2>";
+  setTimeout(()=>{
+    level=1; bubble=80; startLevel();
+  },2000);
 }
+
 function showFinalWin(){
   winScreen.style.display="block";
   winScreen.innerHTML="🎉 <br><br><strong>DU BIST ENTKOMMEN!</strong><br><br>Der Algorithmus hat keine Macht mehr über dich.";
