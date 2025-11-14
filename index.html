@@ -154,7 +154,7 @@
       findReal: () => {
         minigameBox.innerHTML = "<h2>Minigame: Finde den echten Post!</h2>";
         let options = [
-          "Fake News-Beitrag",
+          "Fake-News-Beitrag",
           "Übertriebenes Clickbait",
           "Neutraler Informationspost",
           "Reißerische Überschrift"
@@ -171,14 +171,18 @@
       },
 
       speedClick: () => {
-        minigameBox.innerHTML = "<h2>Minigame: Klicke 5× in 3 Sekunden!</h2>";
+        minigameBox.innerHTML = "<h2>Minigame: Klicke 5× innerhalb von 3 Sekunden!</h2>";
         let count = 0;
         let btn = document.createElement("button");
         btn.className = "miniBtn";
         btn.textContent = "KLICK!";
-
-        btn.onclick = () => { count++; if (count >= 5) showWin(); };
         minigameBox.appendChild(btn);
+
+        btn.onclick = () => { 
+          count++; 
+          btn.textContent = `KLICK! (${count}/5)`; // Feedback
+          if (count >= 5) showWin(); 
+        };
 
         setTimeout(() => { if (count < 5) showGameOver(); }, 3000);
       }
@@ -186,7 +190,7 @@
 
     const levels = {
       1: {
-        story: "Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles beginnt sich zu wiederholen…",
+        story: "Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles wiederholt sich...",
         posts: [
           { text: "Ein Meme, das du schon hundertmal gesehen hast.", type: "same" },
           { text: "Ein belangloser Clip ohne Inhalt.", type: "same" },
@@ -195,7 +199,7 @@
         ]
       },
       2: {
-        story: "Level 2: Der Algorithmus setzt auf starke Emotionen, um dich festzuhalten…",
+        story: "Level 2: Der Algorithmus setzt auf starke Emotionen, um dich festzuhalten...",
         posts: [
           { text: "Empörungspost: 'Das ist einfach unglaublich!'", type: "controversial" },
           { text: "Clickbait: 'Du wirst NICHT glauben, was als Nächstes passiert!'", type: "controversial" },
@@ -234,7 +238,6 @@
 
     function generateFeed() {
       let posts = [...levels[level].posts];
-
       feed.innerHTML = "";
       feed.style.display = "block";
 
@@ -243,11 +246,11 @@
         [posts[i], posts[j]] = [posts[j], posts[i]];
       }
 
-      posts.slice(0, 3).forEach(post => {
+      posts.forEach(post => {
         let div = document.createElement("div");
         div.className = "post fadeIn";
         div.textContent = post.text;
-        div.addEventListener("click", () => handlePostClick(post));
+        div.addEventListener("click", () => handlePostClick(post, div));
         feed.appendChild(div);
       });
     }
@@ -261,13 +264,15 @@
       checkProgress();
     });
 
-    function handlePostClick(post) {
+    function handlePostClick(post, postDiv) {
       if (post.type === "same") bubble += 10;
       if (post.type === "controversial") bubble += 20;
       if (post.type === "break") bubble -= 15;
 
       bubble = Math.min(100, Math.max(0, bubble));
       bubbleValue.textContent = bubble;
+
+      postDiv.remove(); // Entfernt den angeklickten Post
 
       checkProgress();
     }
