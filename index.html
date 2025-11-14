@@ -17,33 +17,13 @@
       overflow-x: hidden;
     }
 
-    .fadeIn {
-      animation: fadeIn 0.8s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .fadeIn { animation: fadeIn 0.8s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
 
     .levelTransition {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      font-size: 3em;
-      color: #00ffaa;
-      animation: fadeIn 1s forwards;
-      z-index: 999;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background:black; display:none; justify-content:center; align-items:center;
+      font-size:3em; color:#00ffaa; animation:fadeIn 1s forwards; z-index:999;
     }
 
     h1 {
@@ -54,103 +34,48 @@
     }
 
     #storyBox {
-      width: 80%;
-      margin-top: 20px;
-      background: #141414;
-      padding: 20px;
-      border-radius: 12px;
-      font-size: 1.2em;
-      text-align: center;
-      display: none;
-      animation: fadeIn 0.8s ease;
+      width:80%; margin-top:20px; background:#141414; padding:20px;
+      border-radius:12px; font-size:1.2em; text-align:center; display:none;
+      animation:fadeIn 0.8s ease;
     }
 
-    #levelInfo {
-      margin: 15px;
-      padding: 10px 20px;
-      background: #222;
-      border-radius: 10px;
-      font-size: 1.2em;
-      animation: fadeIn 0.8s ease;
+    #levelInfo, #stats {
+      margin:15px; padding:10px 20px; background:#222; border-radius:10px;
+      font-size:1.2em; animation:fadeIn 0.8s ease;
     }
 
-    #stats {
-      margin: 10px;
-      font-size: 1.2em;
-      background: #1a1a1a;
-      padding: 10px 20px;
-      border-radius: 10px;
-      animation: fadeIn 0.8s ease;
-    }
-
-    #feed {
-      width: 350px;
-      margin-top: 20px;
-      animation: fadeIn 0.8s ease;
-    }
+    #feed { width:350px; margin-top:20px; animation:fadeIn 0.8s ease; }
 
     .post {
-      background: #252525;
-      margin: 15px 0;
-      padding: 15px;
-      border-radius: 10px;
-      cursor: pointer;
-      border-left: 5px solid #00ffaa33;
-      transition: 0.2s;
+      background:#252525; margin:15px 0; padding:15px; border-radius:10px;
+      cursor:pointer; border-left:5px solid #00ffaa33; transition:0.2s;
       animation: slideIn 0.5s ease;
     }
+    .post:hover { background:#303030; transform:scale(1.03); }
 
-    .post:hover {
-      background: #303030;
-      transform: scale(1.03);
-    }
+    @keyframes slideIn { from {transform:translateX(-100%); opacity:0;} to {transform:translateX(0); opacity:1;} }
 
     #powerUpBtn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #00ffaa;
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.1em;
-      cursor: pointer;
-      display: none;
-      animation: fadeIn 0.8s ease;
+      margin-top:20px; padding:10px 20px; background:#00ffaa; color:#000;
+      border:none; border-radius:10px; font-size:1.1em; cursor:pointer;
+      display:none; animation:fadeIn 0.8s ease;
     }
 
     #minigameBox {
-      margin-top: 20px;
-      padding: 20px;
-      width: 80%;
-      background: #121212;
-      border-radius: 15px;
-      display: none;
-      text-align: center;
-      animation: fadeIn 0.8s ease;
+      margin-top:20px; padding:20px; width:80%; background:#121212;
+      border-radius:15px; display:none; text-align:center; animation:fadeIn 0.8s ease;
     }
 
     .miniBtn {
-      margin: 10px;
-      padding: 12px 25px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1em;
-      background: #00ffaa;
-      color: black;
-      transition: 0.2s;
+      margin:10px; padding:12px 25px; border-radius:10px; border:none;
+      cursor:pointer; font-size:1.1em; background:#00ffaa; color:black;
+      transition:0.2s;
     }
-    .miniBtn:hover {
-      transform: scale(1.1);
-    }
+    .miniBtn:hover { transform:scale(1.1); }
 
     #winScreen {
-      display: none;
-      margin-top: 40px;
-      font-size: 2em;
-      color: #00ff9d;
-      text-align: center;
-      animation: fadeIn 1s ease;
+      display:none; margin-top:40px; font-size:2em; color:#00ff9d;
+      text-align:center; animation:fadeIn 1s ease;
     }
   </style>
 </head>
@@ -162,12 +87,10 @@
   <div id="storyBox"></div>
   <div id="levelInfo"></div>
   <div id="stats">Filterblase: <span id="bubbleValue">80</span>%</div>
-
   <button id="powerUpBtn">🔧 Power-Up einsetzen</button>
 
   <div id="minigameBox"></div>
   <div id="feed"></div>
-
   <div id="winScreen"></div>
 
   <script>
@@ -186,7 +109,7 @@
     const minigames = {
       findReal: () => {
         minigameBox.innerHTML = "<h2>Minigame: Finde den realen Post!</h2>";
-        let options = ["Fake News", "Clickbait Drama", "Neutraler Nachrichtenpost", "Übertriebene Schlagzeile"];
+        let options = ["Fake News", "Clickbait", "Neutraler Nachrichtenpost", "Übertriebene Schlagzeile"];
         let correct = 2;
 
         options.forEach((opt, i) => {
@@ -205,37 +128,34 @@
         btn.className = "miniBtn";
         btn.textContent = "KLICK!";
 
-        btn.onclick = () => {
-          count++;
-          if (count >= 5) showWin();
-        };
-
+        btn.onclick = () => { count++; if (count >= 5) showWin(); };
         minigameBox.appendChild(btn);
-        setTimeout(() => {
-          if (count < 5) showGameOver();
-        }, 3000);
+
+        setTimeout(() => { if (count < 5) showGameOver(); }, 3000);
       }
     };
 
     const levels = {
       1: {
-        story: "Level 1: Dein Feed wirkt merkwürdig einseitig. Alles wiederholt sich…",
+        story: "Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles wiederholt sich…",
         posts: [
-          { text: "Ein Meme, das du schon tausendmal sahst.", type: "same" },
-          { text: "Ein weiterer Gaming-Clip.", type: "same" },
-          { text: "Ein neutraler Lernpost.", type: "break" }
+          { text: "Ein Meme, das du schon zigmal gesehen hast.", type: "same" },
+          { text: "Ein belangloser Clip ohne Inhalt.", type: "same" },
+          { text: "Ein kurzer, sachlicher Lernbeitrag.", type: "break" },
+          { text: "Ein zufälliger Post über ein anderes Thema.", type: "break" }
         ]
       },
       2: {
-        story: "Level 2: Der Algorithmus setzt auf Emotionen. Er versucht, dich festzuhalten…",
+        story: "Level 2: Der Algorithmus versucht dich mit Emotionen festzuhalten…",
         posts: [
-          { text: "Wut-Post!", type: "controversial" },
-          { text: "Clickbait: 'DU GLAUBST NIE WAS PASSIERT IST'.", type: "controversial" },
-          { text: "Ein sachlicher Artikel erscheint.", type: "break" }
+          { text: "Empörungspost: 'Was hier passiert ist, ist UNFASSBAR!'", type: "controversial" },
+          { text: "Clickbait: 'Du wirst SCHOCKIERT sein!'", type: "controversial" },
+          { text: "Ein ruhiger Infoartikel.", type: "break" },
+          { text: "Ein objektiver Nachrichtenausschnitt.", type: "break" }
         ]
       },
       3: {
-        story: "Finales Level! Nur ein Minigame kann dich jetzt noch retten…",
+        story: "Finales Level! Nur ein Minigame kann dich befreien…",
         posts: []
       }
     };
@@ -246,10 +166,8 @@
       setTimeout(() => transition.style.display = "none", 1200);
 
       let data = levels[level];
-
       storyBox.style.display = "block";
       storyBox.textContent = data.story;
-
       levelInfo.textContent = "Level " + level;
 
       if (level === 3) {
@@ -265,18 +183,23 @@
     }
 
     function generateFeed() {
-      let posts = levels[level].posts;
+      let posts = [...levels[level].posts];
       feed.innerHTML = "";
       feed.style.display = "block";
 
-      for (let i = 0; i < 3; i++) {
-        let post = posts[Math.floor(Math.random() * posts.length)];
+      // shuffle (no duplicates)
+      for (let i = posts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [posts[i], posts[j]] = [posts[j], posts[i]];
+      }
+
+      posts.slice(0, 3).forEach(post => {
         let div = document.createElement("div");
         div.className = "post fadeIn";
         div.textContent = post.text;
         div.addEventListener("click", () => handlePostClick(post));
         feed.appendChild(div);
-      }
+      });
     }
 
     powerUpBtn.addEventListener("click", () => {
@@ -291,60 +214,4 @@
     function handlePostClick(post) {
       if (post.type === "same") bubble += 10;
       if (post.type === "controversial") bubble += 20;
-      if (post.type === "break") bubble -= 15;
-
-      bubble = Math.max(0, Math.min(100, bubble));
-      bubbleValue.textContent = bubble;
-
-      checkProgress();
-      generateFeed();
-    }
-
-    function checkProgress() {
-      if (bubble <= 0) {
-        level++;
-        if (level > 3) return showWin();
-        bubble = 80;
-        bubbleValue.textContent = bubble;
-        startLevel();
-      }
-
-      if (bubble >= 100) {
-        showGameOver();
-      }
-    }
-
-    function startRandomMinigame() {
-      minigameBox.style.display = "block";
-      feed.style.display = "none";
-
-      let miniKeys = Object.keys(minigames);
-      let selected = miniKeys[Math.floor(Math.random() * miniKeys.length)];
-
-      minigames[selected]();
-    }
-
-    function showWin() {
-      hideAll();
-      winScreen.style.display = "block";
-      winScreen.textContent = "🎉 DU HAST ALGO ESCAPE GESCHAFFT!";
-    }
-
-    function showGameOver() {
-      hideAll();
-      winScreen.style.display = "block";
-      winScreen.style.color = "#ff5050";
-      winScreen.textContent = "💀 GAME OVER – Der Algorithmus hat dich übernommen!";
-    }
-
-    function hideAll() {
-      feed.style.display = "none";
-      minigameBox.style.display = "none";
-      storyBox.style.display = "none";
-      powerUpBtn.style.display = "none";
-    }
-
-    startLevel();
-  </script>
-</body>
-</html>
+      if (post.type === "break") bubble -=
