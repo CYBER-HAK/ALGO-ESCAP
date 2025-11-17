@@ -34,10 +34,29 @@
 
   #stats {
     margin-top: 15px;
-    padding: 10px 20px;
+    width: 85%;
+    padding: 10px;
     background: #222;
     border-radius: 10px;
     font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #bubbleBar {
+    flex-grow: 1;
+    height: 20px;
+    background: #444;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  #bubbleFill {
+    height: 100%;
+    width: 80%;
+    background: #00ffaa;
+    transition: width 0.3s;
   }
 
   #feed {
@@ -64,6 +83,7 @@
     margin-top: 40px;
     font-size: 2em;
     display: none;
+    text-align: center;
   }
 
   .fade {
@@ -81,119 +101,124 @@
 <h1>ALGO ESCAPE</h1>
 
 <div id="story"></div>
-<div id="stats">Filterblase: <span id="bubbleValue">80</span>%</div>
+
+<div id="stats">
+  Filterblase: <span id="bubbleValue">80</span>%
+  <div id="bubbleBar"><div id="bubbleFill"></div></div>
+</div>
 
 <div id="feed"></div>
 
 <div id="winScreen">🎉 Du hast den Algorithmus besiegt!</div>
+<div id="gameOver">💀 Die Filterblase ist explodiert!</div>
 
 <script>
 let level = 1;
 let bubble = 80;
 
 const bubbleValue = document.getElementById("bubbleValue");
+const bubbleFill = document.getElementById("bubbleFill");
 const storyBox = document.getElementById("story");
 const feed = document.getElementById("feed");
 const win = document.getElementById("winScreen");
+const gameOver = document.getElementById("gameOver");
 
-const effects = [-15, -10, -5, 5, 10, 15]; // Zufällige Effekte
+let availablePosts = [];
 
-// ----------- LEVEL POSTS (40+ pro Level) -----------
+// ---------------- LEVELS ----------------
 
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt merkwürdig einseitig… erkennst du die Muster?",
     posts: [
-      "Du siehst schon wieder denselben Meme.",
-      "Ein sinnloser Tanzclip.",
-      "Eine Produktwerbung, die du schon 4-mal gesehen hast.",
-      "Ein Tierbaby-Video.",
-      "Eine Kochanleitung.",
-      "Ein langweiliges Fitness-Reel.",
-      "Ein Clip ohne Aussage.",
-      "Ein Video: 'Die 5 besten Lifehacks!'",
-      "Ein kurzer Lernbeitrag.",
-      "Ein zufälliger Reisepost.",
-      "Ein weiterer Meme.",
-      "Ein Clip über ein Thema, das dich nicht interessiert.",
-      "Ein Q&A-Video ohne Inhalt.",
-      "Ein unnötiger Streit-Kommentar.",
-      "Ein harmloses DIY-Video.",
-      "Ein langweiliges Reaction-Video.",
-      "Ein Gaming-Clip ohne Kontext.",
-      "Ein kurzes Info-Snippet.",
-      "Ein Post mit einer positiven Nachricht.",
-      "Ein Beitrag über Wissenschaft.",
-      "Ein entspannter Naturclip.",
-      "Ein neutraler Post über Geschichte.",
-      "Ein interessantes Fakt-Video.",
-      "Ein Video: '10 Dinge, die du nicht wusstest!'",
-      "Ein kurzer Politik-Ausschnitt.",
-      "Ein Clip über Technik.",
-      "Ein Beitrag zu Ernährung.",
-      "Ein neutraler News-Beitrag.",
-      "Ein harmloser Comedy-Clip.",
-      "Ein Post über Gesundheit.",
-    ]
+      {text: "Ein harmloses Meme", effect: -5},
+      {text: "Ein süßes Tiervideo", effect: -5},
+      {text: "Eine sinnlose Werbung", effect: +5},
+      {text: "Ein kurzer Lernclip", effect: -10},
+      {text: "Ein DIY-Video", effect: -5},
+      {text: "Ein neutraler News-Beitrag", effect: -5},
+      {text: "Ein Clip ohne Aussage", effect: +5},
+      {text: "Ein interessantes Fakt-Video", effect: -10},
+      {text: "Ein weiteres Meme", effect: -5},
+      {text: "Ein Clip über ein uninteressantes Thema", effect: +5},
+      {text: "Ein entspannter Naturclip", effect: -5},
+      {text: "Eine Produktwerbung", effect: +5},
+      {text: "Ein kurzer Politik-Ausschnitt", effect: -5},
+      {text: "Ein harmloses Reaction-Video", effect: -5},
+      {text: "Ein kurzer Info-Snippet", effect: -10},
+      {text: "Ein Tierbaby-Video", effect: -5},
+      {text: "Ein weiterer Lernbeitrag", effect: -5},
+      {text: "Ein Video: '10 Dinge, die du nicht wusstest!'", effect: -10},
+      {text: "Ein Video: 'Die 5 besten Lifehacks!'", effect: -5},
+      {text: "Ein Clip ohne Kontext", effect: +5}
+    ],
+    minigame: function() {
+      alert("Minigame Level 1: Klicke die neutralen Posts, um die Filterblase zu senken!");
+    }
   },
 
   2: {
     story: "Level 2: Der Algorithmus setzt auf starke Emotionen… bleib wachsam!",
     posts: [
-      "Empörungspost: 'Wie kann DAS erlaubt sein?!'",
-      "Clickbait: 'Du wirst SCHOCKIERT sein!'",
-      "Drama-Video: 'Ich kann nicht mehr…'",
-      "Kommentarstreit unter Fremden.",
-      "Video mit übertriebenen Behauptungen.",
-      "Emotionaler Appell.",
-      "Politischer Streitpost.",
-      "Video mit starker Meinung.",
-      "Clickbait-Thumbnail mit roten Kreisen.",
-      "Ein sachlicher Infoartikel.",
-      "Ein Nachrichtenclip.",
-      "Ein ruhiger Wissenschaftsbeitrag.",
-      "Ein neutraler Gesundheitsbeitrag.",
-      "Video: 'Er hat DAS wirklich getan??'",
-      "Skandalpost über Promis.",
-      "Ein faktenbasierter Bericht.",
-      "Ein ruhiger Erklärbeitrag.",
-      "Ein neutraler Podcast-Ausschnitt.",
-      "Ein objektiver Nachrichtentext.",
-      "Ein Info-Video über Geschichte.",
-      "Ein Clip über Forschung.",
-      "Ein Lernvideo.",
-      "Ein gesellschaftlicher Überblick.",
-      "Ein Technologie-Update.",
-      "Ein Gesundheitstipp.",
-      "Ein Naturvideo.",
-      "Ein entspannter Clip ohne Drama.",
-      "Ein kleiner Wissensfakt.",
-      "Ein ruhiger Politikbeitrag.",
-      "Eine positive Nachricht.",
-    ]
+      {text: "Empörungspost: 'Wie kann DAS erlaubt sein?!'", effect: +15},
+      {text: "Clickbait: 'Du wirst SCHOCKIERT sein!'", effect: +10},
+      {text: "Drama-Video: 'Ich kann nicht mehr…'", effect: +10},
+      {text: "Kommentarstreit unter Fremden", effect: +10},
+      {text: "Video mit übertriebenen Behauptungen", effect: +10},
+      {text: "Emotionaler Appell", effect: +10},
+      {text: "Politischer Streitpost", effect: +15},
+      {text: "Ein sachlicher Infoartikel", effect: -10},
+      {text: "Ein Nachrichtenclip", effect: -10},
+      {text: "Ein ruhiger Wissenschaftsbeitrag", effect: -15},
+      {text: "Ein neutraler Gesundheitsbeitrag", effect: -10},
+      {text: "Video: 'Er hat DAS wirklich getan??'", effect: +10},
+      {text: "Skandalpost über Promis", effect: +15},
+      {text: "Ein faktenbasierter Bericht", effect: -10},
+      {text: "Ein ruhiger Erklärbeitrag", effect: -10},
+      {text: "Ein neutraler Podcast-Ausschnitt", effect: -10},
+      {text: "Ein Info-Video über Geschichte", effect: -10},
+      {text: "Ein Clip über Forschung", effect: -10},
+      {text: "Ein Lernvideo", effect: -10},
+      {text: "Eine positive Nachricht", effect: -5}
+    ],
+    minigame: function() {
+      alert("Minigame Level 2: Klicke die dramatischen Posts schnell weg, bevor die Filterblase 100 erreicht!");
+    }
   },
 
   3: {
     story: "Finales Level: Nur ein Minigame kann dich befreien!",
-    posts: []
+    posts: [
+      {text: "Politisches Drama", effect: +15},
+      {text: "Fakten-Check Video", effect: -15},
+      {text: "Tier-Video", effect: -5},
+      {text: "Clickbait", effect: +10},
+      {text: "Neutraler Info-Clip", effect: -10},
+      {text: "Emotionaler Aufruf", effect: +15},
+      {text: "Kurzer Lernbeitrag", effect: -10},
+      {text: "Unterhaltsamer Clip", effect: -5},
+      {text: "Skandalpost", effect: +15},
+      {text: "Harmloses DIY-Video", effect: -5}
+    ],
+    minigame: function() {
+      alert("Finales Minigame: Ordne die Posts nach Effekt (Filterblase erhöhen oder senken)!");
+    }
   }
 };
 
-// ----------------------------------------
-// STARTLEVEL
-// ----------------------------------------
-
-let availablePosts = [];
+// ---------------- START ----------------
 
 function startLevel() {
   bubble = 80;
-  bubbleValue.textContent = bubble;
+  updateBubble();
   storyBox.textContent = levels[level].story;
 
   availablePosts = [...levels[level].posts];
-
   feed.innerHTML = "";
   renderPosts();
+
+  // Starte Minigame am Anfang jedes Levels
+  levels[level].minigame();
 }
 
 function renderPosts() {
@@ -201,20 +226,21 @@ function renderPosts() {
 
   while (feed.children.length < 4 && availablePosts.length > 0) {
     let index = Math.floor(Math.random() * availablePosts.length);
-    let postText = availablePosts.splice(index, 1)[0];
+    let post = availablePosts.splice(index, 1)[0];
 
     let div = document.createElement("div");
     div.className = "post fade";
-    div.textContent = postText;
-    div.onclick = () => handlePostClick(div);
+    div.textContent = post.text;
+    div.onclick = () => handlePostClick(div, post.effect);
     feed.appendChild(div);
   }
 }
 
-function handlePostClick(div) {
-  let effect = effects[Math.floor(Math.random() * effects.length)];
-  bubble = Math.max(0, bubble + effect);
-  bubbleValue.textContent = bubble;
+function handlePostClick(div, effect) {
+  bubble += effect;
+  if (bubble > 100) bubble = 100;
+  if (bubble < 0) bubble = 0;
+  updateBubble();
 
   div.remove();
 
@@ -222,20 +248,29 @@ function handlePostClick(div) {
     nextLevel();
     return;
   }
+  if (bubble >= 100) {
+    feed.style.display = "none";
+    storyBox.style.display = "none";
+    gameOver.style.display = "block";
+    return;
+  }
 
   renderPosts();
 }
 
+function updateBubble() {
+  bubbleValue.textContent = bubble;
+  bubbleFill.style.width = bubble + "%";
+}
+
 function nextLevel() {
   level++;
-
   if (level > 3) {
     feed.style.display = "none";
     storyBox.style.display = "none";
     win.style.display = "block";
     return;
   }
-
   startLevel();
 }
 
