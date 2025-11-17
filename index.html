@@ -4,10 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ALGO ESCAPE</title>
+
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(180deg, #0c0c0c, #171717);
+    background: #0f0f0f;               /* Feste Farbe → keine Streifen */
     color: white;
     margin: 0;
     padding: 0;
@@ -34,29 +35,10 @@
 
   #stats {
     margin-top: 15px;
-    width: 85%;
-    padding: 10px;
+    padding: 10px 20px;
     background: #222;
     border-radius: 10px;
     font-size: 1.2em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  #bubbleBar {
-    flex-grow: 1;
-    height: 20px;
-    background: #444;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  #bubbleFill {
-    height: 100%;
-    width: 80%;
-    background: #00ffaa;
-    transition: width 0.3s;
   }
 
   #feed {
@@ -79,23 +61,32 @@
     background: #303030;
   }
 
-  #winScreen, #gameOver {
+  #winScreen,
+  #gameOver {
     margin-top: 40px;
     font-size: 2em;
     display: none;
     text-align: center;
   }
 
-  .fade {
-    animation: fade 0.35s ease;
+  #restartBtn {
+    margin-top: 25px;
+    padding: 12px 25px;
+    font-size: 1.2em;
+    background: #00ffaa;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: none;
   }
 
-  @keyframes fade {
-    from {opacity: 0; transform: translateY(10px);}
-    to   {opacity: 1; transform: translateY(0);}
+  #restartBtn:hover {
+    background: #00ddaa;
   }
+
 </style>
 </head>
+
 <body>
 
 <h1>ALGO ESCAPE</h1>
@@ -104,179 +95,186 @@
 
 <div id="stats">
   Filterblase: <span id="bubbleValue">80</span>%
-  <div id="bubbleBar"><div id="bubbleFill"></div></div>
 </div>
 
 <div id="feed"></div>
 
 <div id="winScreen">🎉 Du hast den Algorithmus besiegt!</div>
-<div id="gameOver">💀 Die Filterblase ist explodiert!</div>
+
+<div id="gameOver">❌ Die Filterblase hat dich verschluckt…</div>
+<button id="restartBtn">Neu starten</button>
 
 <script>
+/* -----------------------------------------------------
+   GAME DATA
+----------------------------------------------------- */
+
 let level = 1;
 let bubble = 80;
 
 const bubbleValue = document.getElementById("bubbleValue");
-const bubbleFill = document.getElementById("bubbleFill");
 const storyBox = document.getElementById("story");
 const feed = document.getElementById("feed");
 const win = document.getElementById("winScreen");
 const gameOver = document.getElementById("gameOver");
-
-let availablePosts = [];
-
-// ---------------- LEVELS ----------------
+const restartBtn = document.getElementById("restartBtn");
 
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt merkwürdig einseitig… erkennst du die Muster?",
     posts: [
-      {text: "Ein harmloses Meme", effect: -5},
-      {text: "Ein süßes Tiervideo", effect: -5},
-      {text: "Eine sinnlose Werbung", effect: +5},
-      {text: "Ein kurzer Lernclip", effect: -10},
-      {text: "Ein DIY-Video", effect: -5},
-      {text: "Ein neutraler News-Beitrag", effect: -5},
-      {text: "Ein Clip ohne Aussage", effect: +5},
-      {text: "Ein interessantes Fakt-Video", effect: -10},
-      {text: "Ein weiteres Meme", effect: -5},
-      {text: "Ein Clip über ein uninteressantes Thema", effect: +5},
-      {text: "Ein entspannter Naturclip", effect: -5},
-      {text: "Eine Produktwerbung", effect: +5},
-      {text: "Ein kurzer Politik-Ausschnitt", effect: -5},
-      {text: "Ein harmloses Reaction-Video", effect: -5},
-      {text: "Ein kurzer Info-Snippet", effect: -10},
-      {text: "Ein Tierbaby-Video", effect: -5},
-      {text: "Ein weiterer Lernbeitrag", effect: -5},
-      {text: "Ein Video: '10 Dinge, die du nicht wusstest!'", effect: -10},
-      {text: "Ein Video: 'Die 5 besten Lifehacks!'", effect: -5},
-      {text: "Ein Clip ohne Kontext", effect: +5}
-    ],
-    minigame: function() {
-      console.log("Minigame Level 1 gestartet");
-    }
+      { text: "Süßes Katzenvideo", effect: -5 },
+      { text: "Harmloses Meme", effect: -5 },
+      { text: "Naturclip", effect: -5 },
+      { text: "DIY-Idee", effect: -5 },
+      { text: "Kurzes Lernvideo", effect: -10 },
+      { text: "Wissensfakt", effect: -10 },
+      { text: "Neutraler Newsartikel", effect: -10 },
+      { text: "Mini-Doku", effect: -10 },
+      { text: "Wissenschaftliche Erklärung", effect: -15 },
+      { text: "Recherchierter Bericht", effect: -15 },
+      { text: "Produktwerbung", effect: +5 },
+      { text: "Clip ohne Inhalt", effect: +5 },
+      { text: "Clickbait-Titel", effect: +5 },
+      { text: "Lifestyle-Werbung", effect: +10 },
+      { text: "Suggestiver Clip", effect: +10 },
+      { text: "Verdrehte Fakten", effect: +15 },
+      { text: "Populistische Aussage", effect: +15 }
+    ]
   },
 
   2: {
-    story: "Level 2: Der Algorithmus setzt auf starke Emotionen… bleib wachsam!",
+    story: "Level 2: Jetzt setzt der Algorithmus auf Emotionen – bleib wachsam.",
     posts: [
-      {text: "Empörungspost: 'Wie kann DAS erlaubt sein?!'", effect: +15},
-      {text: "Clickbait: 'Du wirst SCHOCKIERT sein!'", effect: +10},
-      {text: "Drama-Video: 'Ich kann nicht mehr…'", effect: +10},
-      {text: "Kommentarstreit unter Fremden", effect: +10},
-      {text: "Video mit übertriebenen Behauptungen", effect: +10},
-      {text: "Emotionaler Appell", effect: +10},
-      {text: "Politischer Streitpost", effect: +15},
-      {text: "Ein sachlicher Infoartikel", effect: -10},
-      {text: "Ein Nachrichtenclip", effect: -10},
-      {text: "Ein ruhiger Wissenschaftsbeitrag", effect: -15},
-      {text: "Ein neutraler Gesundheitsbeitrag", effect: -10},
-      {text: "Video: 'Er hat DAS wirklich getan??'", effect: +10},
-      {text: "Skandalpost über Promis", effect: +15},
-      {text: "Ein faktenbasierter Bericht", effect: -10},
-      {text: "Ein ruhiger Erklärbeitrag", effect: -10},
-      {text: "Ein neutraler Podcast-Ausschnitt", effect: -10},
-      {text: "Ein Info-Video über Geschichte", effect: -10},
-      {text: "Ein Clip über Forschung", effect: -10},
-      {text: "Ein Lernvideo", effect: -10},
-      {text: "Eine positive Nachricht", effect: -5}
-    ],
-    minigame: function() {
-      console.log("Minigame Level 2 gestartet");
-    }
+      { text: "Feel-Good Video", effect: -5 },
+      { text: "Info-Snippet", effect: -5 },
+      { text: "Sachliche Nachricht", effect: -10 },
+      { text: "Erklärvideo Geschichte", effect: -10 },
+      { text: "Faktenbericht", effect: -10 },
+      { text: "Wissenschaftliche Analyse", effect: -15 },
+      { text: "Neutraler Podcast", effect: -15 },
+      { text: "Clickbait Drama", effect: +5 },
+      { text: "Emotionaler Monolog", effect: +5 },
+      { text: "Streitkommentare", effect: +10 },
+      { text: "Drama-Video", effect: +10 },
+      { text: "Übertreibende Behauptung", effect: +10 },
+      { text: "Skandalisiert", effect: +15 },
+      { text: "Politisch verzerrt", effect: +15 }
+    ]
   },
 
   3: {
-    story: "Finales Level: Nur ein Minigame kann dich befreien!",
+    story: "Finales Level: Der Algorithmus kämpft um dich – bleib klar!",
     posts: [
-      {text: "Politisches Drama", effect: +15},
-      {text: "Fakten-Check Video", effect: -15},
-      {text: "Tier-Video", effect: -5},
-      {text: "Clickbait", effect: +10},
-      {text: "Neutraler Info-Clip", effect: -10},
-      {text: "Emotionaler Aufruf", effect: +15},
-      {text: "Kurzer Lernbeitrag", effect: -10},
-      {text: "Unterhaltsamer Clip", effect: -5},
-      {text: "Skandalpost", effect: +15},
-      {text: "Harmloses DIY-Video", effect: -5}
-    ],
-    minigame: function() {
-      console.log("Minigame Level 3 gestartet");
-    }
+      { text: "Niedliches Tier", effect: -5 },
+      { text: "Naturclip", effect: -5 },
+      { text: "Fakten-Check", effect: -10 },
+      { text: "Neutraler Info-Clip", effect: -10 },
+      { text: "Wissenschaft pur", effect: -15 },
+      { text: "Clickbait: 'MUSST du sehen!!'", effect: +5 },
+      { text: "Emotionales Statement", effect: +5 },
+      { text: "Politisches Drama", effect: +10 },
+      { text: "Meinungspost", effect: +10 },
+      { text: "Manipulativer Viralclip", effect: +15 },
+      { text: "Faktenverdreher", effect: +15 }
+    ]
   }
 };
 
-// ---------------- START ----------------
+/* -----------------------------------------------------
+   GAME LOGIC
+----------------------------------------------------- */
+
+let availablePosts = [];
 
 function startLevel() {
   bubble = 80;
-  updateBubble();
+  bubbleValue.textContent = bubble;
+
   storyBox.textContent = levels[level].story;
 
   availablePosts = [...levels[level].posts];
+
   feed.innerHTML = "";
   renderPosts();
-
-  levels[level].minigame();
 }
 
 function renderPosts() {
-  while (feed.children.length < 4) {
+  feed.innerHTML = "";
 
-    // Falls leer → auffüllen ohne Wiederholungen pro Durchlauf
-    if (availablePosts.length === 0) {
-      availablePosts = [...levels[level].posts];
-    }
-
+  while (feed.children.length < 4 && availablePosts.length > 0) {
     let index = Math.floor(Math.random() * availablePosts.length);
-    let post = availablePosts.splice(index, 1)[0];
+    let item = availablePosts.splice(index, 1)[0];
 
     let div = document.createElement("div");
-    div.className = "post fade";
-    div.textContent = post.text;
-    div.onclick = () => handlePostClick(div, post.effect);
+    div.className = "post";
+    div.textContent = item.text;
+    div.dataset.effect = item.effect;
+
+    div.onclick = () => handlePost(div);
+
     feed.appendChild(div);
   }
 }
 
-function handlePostClick(div, effect) {
+function handlePost(div) {
+  let effect = Number(div.dataset.effect);
+
+  // Filterblase korrekt begrenzen
+  bubble = Math.min(100, Math.max(0, bubble + effect));
+  bubbleValue.textContent = bubble;
+
   div.remove();
 
-  bubble += effect;
-  bubble = Math.max(0, Math.min(100, bubble));
-  updateBubble();
-
-  if (bubble === 0) {
-    nextLevel();
-    return;
+  if (bubble <= 0) {
+    return nextLevel();
   }
 
   if (bubble >= 100) {
-    feed.style.display = "none";
-    storyBox.style.display = "none";
-    gameOver.style.display = "block";
-    return;
+    return triggerGameOver();
   }
 
   renderPosts();
 }
 
-function updateBubble() {
-  bubbleValue.textContent = bubble;
-  bubbleFill.style.width = bubble + "%";
-}
-
 function nextLevel() {
   level++;
+
   if (level > 3) {
     feed.style.display = "none";
     storyBox.style.display = "none";
     win.style.display = "block";
     return;
   }
+
   startLevel();
 }
 
+function triggerGameOver() {
+  feed.style.display = "none";
+  storyBox.style.display = "none";
+  gameOver.style.display = "block";
+  restartBtn.style.display = "block";
+}
+
+/* -----------------------------------------------------
+   RESTART BUTTON
+----------------------------------------------------- */
+restartBtn.onclick = () => {
+  // Reset
+  level = 1;
+
+  feed.style.display = "block";
+  storyBox.style.display = "block";
+  gameOver.style.display = "none";
+  restartBtn.style.display = "none";
+
+  startLevel();
+};
+
+/* -----------------------------------------------------
+   INITIAL START
+----------------------------------------------------- */
 startLevel();
 </script>
 
