@@ -153,7 +153,7 @@ const levels = {
       {text: "Ein Clip ohne Kontext", effect: +5}
     ],
     minigame: function() {
-      alert("Minigame Level 1: Klicke die neutralen Posts, um die Filterblase zu senken!");
+      console.log("Minigame Level 1 gestartet");
     }
   },
 
@@ -182,7 +182,7 @@ const levels = {
       {text: "Eine positive Nachricht", effect: -5}
     ],
     minigame: function() {
-      alert("Minigame Level 2: Klicke die dramatischen Posts schnell weg, bevor die Filterblase 100 erreicht!");
+      console.log("Minigame Level 2 gestartet");
     }
   },
 
@@ -201,7 +201,7 @@ const levels = {
       {text: "Harmloses DIY-Video", effect: -5}
     ],
     minigame: function() {
-      alert("Finales Minigame: Ordne die Posts nach Effekt (Filterblase erhöhen oder senken)!");
+      console.log("Minigame Level 3 gestartet");
     }
   }
 };
@@ -217,14 +217,17 @@ function startLevel() {
   feed.innerHTML = "";
   renderPosts();
 
-  // Starte Minigame am Anfang jedes Levels
   levels[level].minigame();
 }
 
 function renderPosts() {
-  feed.innerHTML = "";
+  while (feed.children.length < 4) {
 
-  while (feed.children.length < 4 && availablePosts.length > 0) {
+    // Falls leer → auffüllen ohne Wiederholungen pro Durchlauf
+    if (availablePosts.length === 0) {
+      availablePosts = [...levels[level].posts];
+    }
+
     let index = Math.floor(Math.random() * availablePosts.length);
     let post = availablePosts.splice(index, 1)[0];
 
@@ -237,17 +240,17 @@ function renderPosts() {
 }
 
 function handlePostClick(div, effect) {
-  bubble += effect;
-  if (bubble > 100) bubble = 100;
-  if (bubble < 0) bubble = 0;
-  updateBubble();
-
   div.remove();
+
+  bubble += effect;
+  bubble = Math.max(0, Math.min(100, bubble));
+  updateBubble();
 
   if (bubble === 0) {
     nextLevel();
     return;
   }
+
   if (bubble >= 100) {
     feed.style.display = "none";
     storyBox.style.display = "none";
