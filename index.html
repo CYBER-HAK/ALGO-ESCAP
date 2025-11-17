@@ -1,357 +1,621 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ALGO ESCAPE</title>
-
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg, #0c0c0c, #171717);
-      color: white;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
+    :root{
+      --bg1:#0b0b0b;
+      --bg2:#171717;
+      --card:#1f1f1f;
+      --accent:#00ffb2;
+      --danger:#ff5a5a;
+      --muted:#bdbdbd;
     }
 
-    h1 {
-      margin-top: 30px;
-      font-size: 2.8em;
-      text-shadow: 0 0 15px #00ffaa;
-      animation: fadeIn 1s ease;
-    }
-
-    .fadeIn { animation: fadeIn 0.8s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
-
-    .levelTransition {
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:black;
-      display:none;
-      justify-content:center;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#fff;
+      display:flex;
+      flex-direction:column;
       align-items:center;
-      font-size:3em;
-      color:#00ffaa;
-      animation:fadeIn 1s forwards;
-      z-index:999;
+      min-height:100vh;
+      padding:24px 12px;
     }
 
-    #storyBox {
-      width:80%;
-      margin-top:20px;
-      background:#141414;
-      padding:20px;
+    h1{
+      margin:6px 0 14px;
+      font-size:44px;
+      letter-spacing:4px;
+      color: #eafff0;
+      text-shadow:0 0 18px rgba(0,255,178,0.25);
+    }
+
+    .container{
+      width:100%;
+      max-width:980px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+    }
+
+    .panel{
+      width:100%;
+      background:linear-gradient(180deg,#0f0f0f,#141414);
       border-radius:12px;
-      font-size:1.2em;
+      padding:16px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    }
+
+    #storyBox{
       text-align:center;
-      display:none;
+      font-size:18px;
+      color:var(--muted);
+      margin-bottom:6px;
     }
 
-    #levelInfo, #stats {
-      margin:15px;
-      padding:10px 20px;
-      background:#222;
+    .meta-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      background: #1b1b1b;
+      padding:8px 14px;
       border-radius:10px;
-      font-size:1.2em;
+      font-weight:600;
+      color:#e6e6e6;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.5);
     }
 
-    #feed {
-      width:380px;
-      margin-top:20px;
-    }
-
-    .post {
-      background:#252525;
-      margin:15px 0;
-      padding:15px;
-      border-radius:10px;
-      cursor:pointer;
-      border-left:5px solid #00ffaa33;
-      transition:0.2s;
-    }
-    .post:hover { background:#303030; transform:scale(1.03); }
-
-    #powerUpBtn {
-      margin-top:20px;
-      padding:10px 20px;
-      background:#00ffaa;
-      color:#000;
+    #powerUpBtn{
+      padding:10px 18px;
+      background:var(--accent);
+      color:#001;
       border:none;
       border-radius:10px;
-      font-size:1.1em;
+      font-weight:700;
       cursor:pointer;
-      display:none;
+      box-shadow: 0 6px 18px rgba(0,255,178,0.12);
+    }
+    #powerUpBtn:disabled{opacity:0.5; cursor:not-allowed}
+
+    #feedGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:12px;
+      width:100%;
+      margin-top:18px;
     }
 
-    #minigameBox {
-      margin-top:20px;
-      padding:20px;
-      width:80%;
-      background:#121212;
-      border-radius:15px;
-      display:none;
-      text-align:center;
-    }
-
-    .miniBtn {
-      margin:10px;
-      padding:12px 25px;
-      border-radius:10px;
-      border:none;
+    .post{
+      background:var(--card);
+      border-radius:12px;
+      padding:14px;
       cursor:pointer;
-      font-size:1.1em;
-      background:#00ffaa;
-      color:black;
-      transition:0.2s;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .25s;
+      border-left:6px solid rgba(0,255,178,0.08);
+      min-height:84px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
     }
-    .miniBtn:hover { transform:scale(1.1); }
+    .post:hover{ transform:translateY(-6px); box-shadow:0 10px 30px rgba(0,0,0,0.6); }
 
-    #winScreen {
-      display:none;
-      margin-top:40px;
-      font-size:2em;
-      color:#00ff9d;
-      text-align:center;
+    .post .txt{ font-size:15px; color:#f1f1f1; }
+    .post .tag{ position:absolute; top:10px; right:10px; font-size:12px; padding:6px 8px; border-radius:8px; color:#000; font-weight:700; }
+    .tag.good{ background:#9ff4d1; }
+    .tag.bad{ background:#ffb3b3; }
+    .tag.neutral{ background:#e0e0e0; color:#111; }
+
+    #minigameBox{ display:none; margin-top:18px; text-align:center; }
+    #minigameBox h2{ margin:6px 0 12px; color:var(--accent); }
+    .miniBtn{ padding:10px 16px; margin:8px; border-radius:10px; background:var(--accent); color:#001; border:none; cursor:pointer; font-weight:700; box-shadow:0 8px 20px rgba(0,255,178,0.08); }
+    .miniBtn.secondary{ background:#ddd; color:#111; }
+
+    #statusRow{ display:flex; gap:14px; justify-content:center; align-items:center; margin-top:6px; flex-wrap:wrap; }
+    #winScreen{ display:none; text-align:center; padding:24px; margin-top:12px; }
+    #winScreen .big{ font-size:28px; color:var(--accent); font-weight:800; }
+
+    /* small screens */
+    @media (max-width:640px){
+      .post{ min-height:68px; padding:12px; }
+      #feedGrid{ grid-template-columns: 1fr; }
+      h1{ font-size:36px; }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>ALGO ESCAPE</h1>
 
-  <div id="transition" class="levelTransition">LEVEL START</div>
+    <div class="panel" style="max-width:980px;">
+      <div id="storyBox">Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles beginnt sich zu wiederholen…</div>
 
-  <h1>ALGO ESCAPE</h1>
+      <div id="statusRow">
+        <div class="badge" id="levelInfo">Level 1</div>
+        <div class="badge" id="bubbleBadge">Filterblase: <strong id="bubbleValue">80</strong>%</div>
+        <button id="powerUpBtn">🔧 Power-Up einsetzen</button>
+      </div>
 
-  <div id="storyBox"></div>
-  <div id="levelInfo"></div>
-  <div id="stats">Filterblase: <span id="bubbleValue">80</span>%</div>
+      <div id="feedGrid"></div>
 
-  <button id="powerUpBtn">🔧 Power-Up einsetzen</button>
+      <div id="minigameBox" class="panel"></div>
 
-  <div id="minigameBox"></div>
-  <div id="feed"></div>
-  <div id="winScreen"></div>
+      <div id="winScreen" class="panel">
+        <div class="big" id="winTitle"></div>
+        <div id="winText" style="color:var(--muted); margin-top:8px"></div>
+        <div style="margin-top:14px;">
+          <button id="restartBtn" class="miniBtn">Neu starten</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    let bubble = 80;
-    let level = 1;
-    let availablePosts = [];
+<script>
+/* -------------------------
+   Spiel-Variablen / Zustand
+   ------------------------- */
+let bubble = 80;
+let level = 1;
+let availablePosts = [];   // Pool für aktuellen Level
+let usedPosts = [];        // für Statistik (optional)
+let powerUsed = false;
 
-    const bubbleValue = document.getElementById("bubbleValue");
-    const levelInfo = document.getElementById("levelInfo");
-    const storyBox = document.getElementById("storyBox");
-    const feed = document.getElementById("feed");
-    const minigameBox = document.getElementById("minigameBox");
-    const winScreen = document.getElementById("winScreen");
-    const powerUpBtn = document.getElementById("powerUpBtn");
-    const transition = document.getElementById("transition");
+/* DOM */
+const bubbleValueEl = document.getElementById('bubbleValue');
+const levelInfoEl = document.getElementById('levelInfo');
+const storyBoxEl = document.getElementById('storyBox');
+const feedGridEl = document.getElementById('feedGrid');
+const powerUpBtn = document.getElementById('powerUpBtn');
+const minigameBox = document.getElementById('minigameBox');
+const winScreen = document.getElementById('winScreen');
+const winTitle = document.getElementById('winTitle');
+const winText = document.getElementById('winText');
+const restartBtn = document.getElementById('restartBtn');
 
-    const minigames = {
-      findReal: () => {
-        minigameBox.innerHTML = "<h2>Minigame: Finde den echten Post!</h2>";
-        let options = [
-          "Fake News-Beitrag",
-          "Übertriebenes Clickbait",
-          "Neutraler Informationspost",
-          "Reißerische Überschrift"
-        ];
-        let correct = 2;
+/* -------------------------
+   Posts / Level-Pools
+   (je Level viele Einträge, keine Dopplungen)
+   Jede Post-Objekt: { id, text, effect }   (effect: positive -> erhöht bubble)
+   ------------------------- */
+const LEVEL_POOLS = {
+  1: [
+    {id:'l1_01', text:"Ein Meme, das du schon hundertmal gesehen hast.", effect: 8},
+    {id:'l1_02', text:"Kurzclip: niedliches Tier.", effect: 0},
+    {id:'l1_03', text:"Belangloser Trend-Tanz.", effect: 5},
+    {id:'l1_04', text:"Ein sachlicher Infopost über Alltagstipps.", effect: -8},
+    {id:'l1_05', text:"Top-10 Liste zu einem Hobbysujet.", effect: 0},
+    {id:'l1_06', text:"Anzeige: 'Erfahre, wie du X erreichst' (Clickbait).", effect: 7},
+    {id:'l1_07', text:"Kurz-FAQ: Wissenschaftliche Fakten einfach erklärt.", effect: -10},
+    {id:'l1_08', text:"Ein humorvolles Meme (leicht repetitiv).", effect: 6},
+    {id:'l1_09', text:"Lokale Nachricht ohne großen Einfluss.", effect: 0},
+    {id:'l1_10', text:"Ein Kommentar eines Users zu einem alten Post.", effect: 2},
+    {id:'l1_11', text:"DIY-Guide: Bastelideen für Anfänger.", effect: -6},
+    {id:'l1_12', text:"Werbeclip: Produktvorstellung.", effect: 4},
+    {id:'l1_13', text:"Kurzes Quiz-Video.", effect: 1},
+    {id:'l1_14', text:"Wiederkehrendes Meme-Format (leicht boost).", effect: 8},
+    {id:'l1_15', text:"Rezeptvideo - Ruhebringender Inhalt.", effect: -4},
+    {id:'l1_16', text:"Retro-Clip mit Nostalgie-Faktor.", effect: 3},
+    {id:'l1_17', text:"Tiny-Documentary: kurze Fakten.", effect: -9},
+    {id:'l1_18', text:"Beliebter Influencer-Post (trendig).", effect: 6},
+    {id:'l1_19', text:"Ankündigung eines Events.", effect: 2},
+    {id:'l1_20', text:"Ein kurzer Tipp zu Produktivität.", effect: -5},
+    {id:'l1_21', text:"Unaufgeregte Naturaufnahme.", effect: -2},
+    {id:'l1_22', text:"User-Umfrage mit vielen Reaktionen.", effect: 5},
+    {id:'l1_23', text:"Mini-Report: Forschungsergebnis in Kürze.", effect: -8},
+    {id:'l1_24', text:"Satire-Post, der polarisiert.", effect: 10},
+    {id:'l1_25', text:"Erklärvideo: 'Wie funktioniert X?'", effect: -7},
+    {id:'l1_26', text:"Zusammenfassung trending Hashtag.", effect: 6},
+    {id:'l1_27', text:"Kurzinterview mit einer Person.", effect: 1},
+    {id:'l1_28', text:"Tiny Art-Clip: beruhigend.", effect: -3},
+    {id:'l1_29', text:"Produktvergleich (klickwürdig).", effect: 4},
+    {id:'l1_30', text:"Nostalgisches Bild aus der Community.", effect: 2},
+    {id:'l1_31', text:"Wiederkehrender Clip mit hohem Like-Rate.", effect: 9},
+    {id:'l1_32', text:"Erklärender Post: Medienkompetenz.", effect: -10},
+    {id:'l1_33', text:"Kurzer Trailer eines neuen Kanals.", effect: 3},
+    {id:'l1_34', text:"Kuriose Faktenliste - leicht viral.", effect: 5},
+    {id:'l1_35', text:"Fakten-Check zu einem Gerücht.", effect: -9},
+    {id:'l1_36', text:"User-Kommentar, der stark polarisieren könnte.", effect: 8},
+    {id:'l1_37', text:"Bei dir beliebter Clip in neuer Variante.", effect: 7},
+    {id:'l1_38', text:"Praktischer Ratgeber für Alltagsprobleme.", effect: -6},
+    {id:'l1_39', text:"Kurzgeschichte mit Wohlfühlmoment.", effect: -3},
+    {id:'l1_40', text:"Screenshot eines viralen Memes.", effect: 6}
+  ],
+  2: [
+    {id:'l2_01', text:"Empörungspost: 'Das ist einfach unglaublich!'", effect: 18},
+    {id:'l2_02', text:"Clickbait: 'Du wirst NICHT glauben, was als Nächstes passiert!'", effect: 20},
+    {id:'l2_03', text:"Drama-Clip mit hitziger Auseinandersetzung.", effect: 22},
+    {id:'l2_04', text:"Emotionales Statement, das polarisiert.", effect: 19},
+    {id:'l2_05', text:"Verschwörungsspekulation (reagiert stark).", effect: 24},
+    {id:'l2_06', text:"Provokanter Nutzerkommentar.", effect: 16},
+    {id:'l2_07', text:"Investigativer Artikel (ruhig, gegenteiliger Effekt).", effect: -12},
+    {id:'l2_08', text:"Tiefgehender Kommentar mit Quellen.", effect: -14},
+    {id:'l2_09', text:"Beruhigendes Interview (versöhnlich).", effect: -10},
+    {id:'l2_10', text:"Fakten-Analyse zu einem Trend.", effect: -11},
+    {id:'l2_11', text:"Aufruf zur Diskussion – hitzig.", effect: 17},
+    {id:'l2_12', text:"Emotionales Kurzvideo, hohe Interaktion.", effect: 18},
+    {id:'l2_13', text:"Satirischer Beitrag, der polarisiert.", effect: 15},
+    {id:'l2_14', text:"Clickbait-Überschrift mit Drama.", effect: 19},
+    {id:'l2_15', text:"Ruhiger Analytiker-Post.", effect: -13},
+    {id:'l2_16', text:"Neutraler Faktenbeitrag.", effect: -9},
+    {id:'l2_17', text:"Aufrüttelnder Erfahrungsbericht.", effect: 14},
+    {id:'l2_18', text:"Debatten-Clip mit vielen Reaktionen.", effect: 16},
+    {id:'l2_19', text:"Hintergrundbericht mit Quellenangabe.", effect: -12},
+    {id:'l2_20', text:"Empörtes Meme (viral).", effect: 17},
+    {id:'l2_21', text:"Analyse: Medienkompetenz erklärt.", effect: -11},
+    {id:'l2_22', text:"Emotionales Testimonial.", effect: 15},
+    {id:'l2_23', text:"Provokantes Statement einer bekannten Person.", effect: 20},
+    {id:'l2_24', text:"Beruhigender Ratgeber-Post.", effect: -10},
+    {id:'l2_25', text:"Zusammenfassung hitziger Debatte.", effect: 18},
+    {id:'l2_26', text:"Langformatiger Qualitätsartikel.", effect: -15},
+    {id:'l2_27', text:"Polarisierendes Meme-Format.", effect: 17},
+    {id:'l2_28', text:"Fakten-Check eines viralen Videos.", effect: -13},
+    {id:'l2_29', text:"Emotionaler Kurzfilm (starker Boost).", effect: 21},
+    {id:'l2_30', text:"Übersicht neutraler Quellen.", effect: -12},
+    {id:'l2_31', text:"User-Shitstorm (lässt Blase wachsen).", effect: 19},
+    {id:'l2_32', text:"Analytischer Beitrag (gegenpol).", effect: -14},
+    {id:'l2_33', text:"Clickbait-Compilation.", effect: 16},
+    {id:'l2_34', text:"Dokumentation-Ausschnitt.", effect: -13},
+    {id:'l2_35', text:"Provokante Frage mit vielen Kommentaren.", effect: 18},
+    {id:'l2_36', text:"Beruhigender Expertenkommentar.", effect: -12},
+    {id:'l2_37', text:"Reißerische Schlagzeile.", effect: 20},
+    {id:'l2_38', text:"Tiefgründiger Essay-Auszug.", effect: -15},
+    {id:'l2_39', text:"Aufruhr-Video (viral).", effect: 22},
+    {id:'l2_40', text:"Gegengewicht: ruhiger Leitartikel.", effect: -14}
+  ],
+  3: [
+    // Level 3 ist Finallevel: hier viele extreme Inhalte (Boosts & Breaks), Minigame entscheidet
+    {id:'l3_01', text:"Algorithmus-Test-Clip: harte Polarisierung.", effect: 22},
+    {id:'l3_02', text:"Zornes-Post mit millionenfacher Reichweite.", effect: 25},
+    {id:'l3_03', text:"Clickbait-Explosion: 'Nicht klicken!'", effect: 24},
+    {id:'l3_04', text:"Manipulativer Kommentar-Thread.", effect: 23},
+    {id:'l3_05', text:"Deep-dive Faktencheck (beruhigend).", effect: -18},
+    {id:'l3_06', text:"Langes Interview (ruhig).", effect: -16},
+    {id:'l3_07', text:"Polarisierendes Viral-Video.", effect: 24},
+    {id:'l3_08', text:"Authentischer Erfahrungsbericht (versöhnt).", effect: -17},
+    {id:'l3_09', text:"Kampf-Post: Likes explodieren.", effect: 26},
+    {id:'l3_10', text:"Reflektierender Leitartikel.", effect: -18},
+    {id:'l3_11', text:"Aufwieglerisches Meme.", effect: 22},
+    {id:'l3_12', text:"Sorgsamer Faktenbeitrag.", effect: -16},
+    {id:'l3_13', text:"Emotionales Testimonial (viral).", effect: 23},
+    {id:'l3_14', text:"Expertendiskurs (beruhigend).", effect: -17},
+    {id:'l3_15', text:"Provokation mit hoher Interaktion.", effect: 24},
+    {id:'l3_16', text:"Sachlicher Hintergrundbericht.", effect: -15},
+    {id:'l3_17', text:"Reißerische Headlinesammlung.", effect: 21},
+    {id:'l3_18', text:"Vertiefende Quellenanalyse.", effect: -19},
+    {id:'l3_19', text:"Shitstorm-Auszug.", effect: 25},
+    {id:'l3_20', text:"Versöhnliche Diskussion.", effect: -16},
+    {id:'l3_21', text:"Provokante Challenge.", effect: 22},
+    {id:'l3_22', text:"Medienkritik (ruhig & stark).", effect: -18},
+    {id:'l3_23', text:"Hasserfüllter Kommentar (viral).", effect: 26},
+    {id:'l3_24', text:"Reflektierender Essay.", effect: -19},
+    {id:'l3_25', text:"Explosive Compilation (boost).", effect: 24},
+    {id:'l3_26', text:"Edu-Clip: Quellen & Kontext.", effect: -17},
+    {id:'l3_27', text:"Mobilisierende Überschrift.", effect: 23},
+    {id:'l3_28', text:"Langformat-Doku-Auszug.", effect: -18},
+    {id:'l3_29', text:"Aufrufen zur Debatte (heftig).", effect: 22},
+    {id:'l3_30', text:"Sorgfältige Kommentaranalyse.", effect: -16},
+    {id:'l3_31', text:"Provokanter Influencer-Post.", effect: 24},
+    {id:'l3_32', text:"Gegenpol: Faktenlayer.", effect: -20},
+    {id:'l3_33', text:"Emotionaler Viral-Clip.", effect: 25},
+    {id:'l3_34', text:"Kontextreicher Recherchebeitrag.", effect: -19},
+    {id:'l3_35', text:"Aufgebrachte Reaktionsvideos.", effect: 23},
+    {id:'l3_36', text:"Analytische Meta-Berichterstattung.", effect: -18},
+    {id:'l3_37', text:"Reißerische Compilations.", effect: 22},
+    {id:'l3_38', text:"Dokumentierte Quellenkette.", effect: -20},
+    {id:'l3_39', text:"Provokante Nutzerclips.", effect: 24},
+    {id:'l3_40', text:"Tiefgehende Expertenrundschau.", effect: -19}
+  ]
+};
 
-        options.forEach((opt, i) => {
-          let btn = document.createElement("button");
-          btn.className = "miniBtn";
-          btn.textContent = opt;
-          btn.onclick = () => i === correct ? showWin() : showGameOver();
-          minigameBox.appendChild(btn);
-        });
-      },
+/* -------------------------
+   Hilfsfunktionen
+   ------------------------- */
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
 
-      speedClick: () => {
-        minigameBox.innerHTML = "<h2>Minigame: Klicke 5× in 3 Sekunden!</h2>";
-        let count = 0;
-        let btn = document.createElement("button");
-        btn.className = "miniBtn";
-        btn.textContent = "KLICK!";
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
-        btn.onclick = () => { count++; if (count >= 5) showWin(); };
-        minigameBox.appendChild(btn);
+/* -------------------------
+   UI / Flow Funktionen
+   ------------------------- */
+function updateUI(){
+  bubbleValueEl.textContent = bubble;
+  levelInfoEl.textContent = 'Level ' + level;
+  storyBoxEl.textContent = (level===1) ? "Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles beginnt sich zu wiederholen…" :
+                           (level===2) ? "Level 2: Der Algorithmus setzt auf Emotionen und Aufruhr, um dich zu halten…" :
+                           "Finales Level: Der Algorithmus greift stark an. Nur ein Minigame kann dich befreien.";
+}
 
-        setTimeout(() => { if (count < 5) showGameOver(); }, 3000);
-      }
-    };
+/* Start eines Levels: fülle availablePosts mit Pool, shuffle */
+function startLevel(){
+  updateUI();
+  powerUsed = false;
+  powerUpBtn.disabled = false;
+  powerUpBtn.textContent = '🔧 Power-Up einsetzen';
 
-    const levels = {
-      1: {
-        story: "Level 1: Dein Feed wirkt ungewöhnlich einseitig. Alles beginnt sich zu wiederholen…",
-        posts: [
-          { text: "Ein Meme, das du schon hundertmal gesehen hast.", type: "same" },
-          { text: "Ein belangloser Clip ohne Inhalt.", type: "same" },
-          { text: "Ein informativer Lernbeitrag.", type: "break" },
-          { text: "Ein sachlicher Post über ein neues Thema.", type: "break" }
-        ]
-      },
-      2: {
-        story: "Level 2: Der Algorithmus setzt auf starke Emotionen, um dich festzuhalten…",
-        posts: [
-          { text: "Empörungspost: 'Das ist einfach unglaublich!'", type: "controversial" },
-          { text: "Clickbait: 'Du wirst NICHT glauben, was als Nächstes passiert!'", type: "controversial" },
-          { text: "Ein ruhiger Informationsartikel.", type: "break" },
-          { text: "Ein objektiver Nachrichtenausschnitt.", type: "break" }
-        ]
-      },
-      3: {
-        story: "Finales Level! Nur ein Minigame kann dich befreien…",
-        posts: []
-      }
-    };
+  // Reset UI-Bereiche
+  winScreen.style.display = 'none';
+  minigameBox.style.display = 'none';
+  feedGridEl.style.display = 'grid';
 
-    function startLevel() {
-      transition.style.display = "flex";
-      transition.textContent = "LEVEL " + level;
+  // Lade Pool und mische
+  const pool = LEVEL_POOLS[level] ? [...LEVEL_POOLS[level]] : [];
+  availablePosts = shuffle(pool);
+  usedPosts = [];
 
-      setTimeout(() => transition.style.display = "none", 1200);
-
-      availablePosts = []; // Reset für neues Level
-
-      let data = levels[level];
-      storyBox.style.display = "block";
-      storyBox.textContent = data.story;
-      levelInfo.textContent = "Level " + level;
-
-      if (level === 3) {
-        feed.style.display = "none";
-        startRandomMinigame();
-        return;
-      }
-
-      generateFeed();
-      powerUpBtn.style.display = "block";
-      powerUpBtn.disabled = false;
-      powerUpBtn.textContent = "🔧 Power-Up einsetzen";
+  // stelle sicher, dass genug posts vorhanden (mind. 4)
+  if(availablePosts.length < 4){
+    // fallback: duplicate until 4 (sollte bei unseren Pools nicht passieren)
+    while(availablePosts.length < 4 && LEVEL_POOLS[level]){
+      availablePosts.push(...LEVEL_POOLS[level]);
     }
+    availablePosts = availablePosts.slice(0, Math.max(4, availablePosts.length));
+    availablePosts = shuffle(availablePosts);
+  }
 
-    function generateFeed() {
-      if (availablePosts.length === 0) {
-        availablePosts = [...levels[level].posts];
-      }
+  renderFeed();
+}
 
-      feed.innerHTML = "";
-      feed.style.display = "block";
+/* Anzeige von genau 4 Posts (sofern möglich) */
+function renderFeed(){
+  feedGridEl.innerHTML = '';
+  // Ensure 4 visible slots or less if pool exhausted
+  const showCount = Math.min(4, availablePosts.length);
 
-      for (let i = availablePosts.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [availablePosts[i], availablePosts[j]] = [availablePosts[j], availablePosts[i]];
-      }
+  for(let i=0;i<showCount;i++){
+    const p = availablePosts[i];
+    const postEl = document.createElement('div');
+    postEl.className = 'post';
+    const tag = document.createElement('div');
+    tag.className = 'tag ' + (p.effect > 0 ? 'bad' : (p.effect < 0 ? 'good' : 'neutral'));
+    tag.textContent = (p.effect > 0 ? '+' + p.effect : (p.effect < 0 ? p.effect : '0'));
+    tag.style.position = 'absolute';
+    tag.style.top = '10px';
+    tag.style.right = '10px';
+    postEl.appendChild(tag);
 
-      let shown = availablePosts.slice(0, 3);
+    const txt = document.createElement('div');
+    txt.className = 'txt';
+    txt.textContent = p.text;
+    postEl.appendChild(txt);
 
-      shown.forEach((post, index) => {
-        let div = document.createElement("div");
-        div.className = "post fadeIn";
-        div.textContent = post.text;
-
-        div.addEventListener("click", () => {
-          handlePostClick(post);
-
-          availablePosts.splice(index, 1);
-
-          if (availablePosts.length > 0) {
-            generateFeed();
-          } else {
-            feed.innerHTML = "<p>Keine weiteren Posts verfügbar.</p>";
-          }
-        });
-
-        feed.appendChild(div);
-      });
-    }
-
-    powerUpBtn.addEventListener("click", () => {
-      bubble -= 25;
-      bubble = Math.max(0, bubble);
-      bubbleValue.textContent = bubble;
-      powerUpBtn.disabled = true;
-      powerUpBtn.textContent = "Power-Up benutzt!";
-      checkProgress();
+    // Click handler: wende Effekt an, entferne post aus Pool, ziehe neuen (falls vorhanden)
+    postEl.addEventListener('click', () => {
+      applyPostEffect(p);
+      // Entferne genau dieses Post-Objekt aus availablePosts (nach id)
+      const idx = availablePosts.findIndex(x => x.id === p.id);
+      if(idx > -1) availablePosts.splice(idx,1);
+      usedPosts.push(p);
+      // Nach Entfernen: wenn noch mindestens 1 Post übrig, refill so dass 4 angezeigt
+      // renderFeed kümmert sich um Anzeige von bis zu 4
+      // kleine Animation: fade-out (CSS nicht separate, wir simply re-render)
+      setTimeout(() => {
+        if(availablePosts.length > 0){
+          renderFeed();
+        } else {
+          // keine weiteren Posts
+          feedGridEl.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--muted)">Keine weiteren Posts verfügbar.</div>';
+        }
+      }, 120);
     });
 
-    function handlePostClick(post) {
-      if (post.type === "same") bubble += 10;
-      if (post.type === "controversial") bubble += 20;
-      if (post.type === "break") bubble -= 15;
+    feedGridEl.appendChild(postEl);
+  }
 
-      bubble = Math.min(100, Math.max(0, bubble));
-      bubbleValue.textContent = bubble;
+  // Wenn pool größer 4: ensure visible area has 4 cards (others will be drawn next)
+  if(availablePosts.length === 0){
+    feedGridEl.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--muted)">Keine weiteren Posts verfügbar.</div>';
+  }
+}
 
-      checkProgress();
+/* Effekt anwenden */
+function applyPostEffect(p){
+  bubble += p.effect;
+  bubble = clamp(bubble, 0, 100);
+  updateUI();
+  checkProgressAfterAction();
+}
+
+/* Power-Up: verringert bubble stark, einmal pro Level */
+powerUpBtn.addEventListener('click', ()=>{
+  if(powerUsed) return;
+  bubble -= 28 - (level-1)*4; // in höheren Levels etwas weniger effektiv
+  bubble = clamp(bubble, 0, 100);
+  powerUsed = true;
+  powerUpBtn.disabled = true;
+  powerUpBtn.textContent = 'Power-Up benutzt';
+  updateUI();
+  // small feedback, then continue
+  setTimeout(()=> checkProgressAfterAction(), 200);
+});
+
+/* Progress Check: Game Over oder Level Down / Next */
+function checkProgressAfterAction(){
+  // Game Over when bubble >= 100
+  if(bubble >= 100){
+    showGameOver();
+    return;
+  }
+  // Next level when bubble <= 0
+  if(bubble <= 0){
+    // advance level
+    level++;
+    if(level > 3){
+      showFinalWin();
+    } else {
+      // small transition
+      feedGridEl.style.display = 'none';
+      minigameBox.style.display = 'none';
+      setTimeout(()=> startLevel(), 700);
     }
+  } else {
+    // otherwise just re-render feed (already handled) and update UI
+    updateUI();
+  }
+}
 
-    function checkProgress() {
-      if (bubble >= 100) {
-        showGameOver();
-      } else if (bubble <= 0) {
-        nextLevel();
+/* -------------------------
+   Minigames (Finallevel)
+   ------------------------- */
+const MINIGAMES = {
+  'findReal': ()=>{
+    minigameBox.style.display = 'block';
+    minigameBox.innerHTML = '<h2>Minigame: Welcher Post ist neutral und quellengesichert?</h2>';
+    // Prepare options, one correct (neutral) and 3 distractors
+    const opts = [
+      {text:'Übertriebene Schlagzeile', correct:false},
+      {text:'Clickbait-Video mit Drama', correct:false},
+      {text:'Quellengesicherter Artikel mit Referenzen', correct:true},
+      {text:'Manipulativer Kommentar-Thread', correct:false}
+    ];
+    shuffle(opts);
+    opts.forEach(o=>{
+      const b = document.createElement('button');
+      b.className = 'miniBtn';
+      b.textContent = o.text;
+      b.addEventListener('click', ()=>{
+        if(o.correct) {
+          showWinMini();
+        } else {
+          showGameOver();
+        }
+      });
+      minigameBox.appendChild(b);
+    });
+  },
+
+  'speedClick': ()=>{
+    minigameBox.style.display = 'block';
+    minigameBox.innerHTML = '<h2>Minigame: Klicke 7× in 4 Sekunden!</h2>';
+    let count=0;
+    const b = document.createElement('button');
+    b.className = 'miniBtn';
+    b.textContent = 'KLICK';
+    b.addEventListener('click', ()=>{
+      count++;
+      b.textContent = `KLICKS: ${count}`;
+      if(count>=7){
+        showWinMini();
       }
+    });
+    minigameBox.appendChild(b);
+    setTimeout(()=>{ if(count<7) showGameOver(); }, 4000);
+  },
+
+  'memory': ()=>{
+    // kleines memory: merke eine Reihenfolge (3 items)
+    minigameBox.style.display = 'block';
+    minigameBox.innerHTML = '<h2>Minigame: Merke die Reihenfolge</h2><div id="memboard" style="margin-top:12px;"></div>';
+    const board = document.getElementById('memboard');
+    const seq = ['A','B','C'];
+    board.innerHTML = '<div style="font-weight:700; color:var(--muted)">Merke: ' + seq.join(' - ') + '</div>';
+    setTimeout(()=> {
+      board.innerHTML = '<div style="margin-top:8px;"></div>';
+      const choices = ['A','B','C','D'];
+      const inputs = [];
+      choices.forEach(ch=>{
+        const b = document.createElement('button');
+        b.className='miniBtn secondary';
+        b.textContent = ch;
+        b.addEventListener('click', ()=>{
+          inputs.push(ch);
+          if(inputs.length===3){
+            if(inputs.join(',')===seq.join(',')){
+              showWinMini();
+            } else {
+              showGameOver();
+            }
+          }
+        });
+        board.appendChild(b);
+      });
+    }, 1200);
+  }
+};
+
+function startRandomMinigame(){
+  minigameBox.innerHTML = '';
+  minigameBox.style.display = 'block';
+  feedGridEl.style.display = 'none';
+  // choose random minigame
+  const keys = Object.keys(MINIGAMES);
+  const pick = keys[Math.floor(Math.random()*keys.length)];
+  MINIGAMES[pick]();
+}
+
+function showWinMini(){
+  minigameBox.innerHTML = '<h2 style="color:var(--accent)">✔ Minigame gewonnen!</h2>';
+  setTimeout(()=>{
+    // finishing the level successfully => player "escapes" this level (set bubble low enough to advance)
+    bubble = Math.max(0, bubble - 60);
+    updateUI();
+    // advance level or finish
+    level++;
+    if(level > 3){
+      showFinalWin();
+    } else {
+      setTimeout(()=> startLevel(), 700);
     }
+  }, 900);
+}
 
-    function nextLevel() {
-      level++;
-      bubble = 80;
-      bubbleValue.textContent = bubble;
+/* -------------------------
+   End / Game Over / Restart
+   ------------------------- */
+function showGameOver(){
+  // show game over panel with restart button
+  minigameBox.style.display='none';
+  feedGridEl.style.display='none';
+  winScreen.style.display='block';
+  winTitle.textContent = '💀 GAME OVER';
+  winText.textContent = 'Der Algorithmus hat dich vollständig in seine Filterblase gezogen.';
+  restartBtn.style.display = 'inline-block';
+}
 
-      if (level > 3) {
-        showFinalWin();
-        return;
-      }
+restartBtn.addEventListener('click', ()=>{
+  // reset whole game
+  level = 1;
+  bubble = 80;
+  availablePosts = [];
+  usedPosts = [];
+  powerUsed = false;
+  winScreen.style.display='none';
+  startLevel();
+});
 
-      feed.style.display = "none";
-      minigameBox.style.display = "none";
+function showFinalWin(){
+  feedGridEl.style.display='none';
+  minigameBox.style.display='none';
+  winScreen.style.display='block';
+  winTitle.textContent = '🎉 DU BIST ENTKOMMEN!';
+  winText.textContent = 'Herzlichen Glückwunsch — du hast den Algorithmus überlistet.';
+  restartBtn.style.display = 'inline-block';
+}
 
-      setTimeout(startLevel, 500);
-    }
+/* -------------------------
+   Init
+   ------------------------- */
+updateUI();
+startLevel();
 
-    function startRandomMinigame() {
-      minigameBox.style.display = "block";
-      let keys = Object.keys(minigames);
-      let pick = keys[Math.floor(Math.random() * keys.length)];
-      minigames[pick]();
-    }
-
-    function showWin() {
-      minigameBox.innerHTML = "<h2>✔ Du hast das Minigame gewonnen!</h2>";
-      setTimeout(nextLevel, 1200);
-    }
-
-    function showGameOver() {
-      feed.style.display = "none";
-      minigameBox.style.display = "none";
-
-      storyBox.innerHTML =
-        "<h2 style='color:red;'>GAME OVER – der Algorithmus hat dich komplett eingeschlossen!</h2>";
-
-      setTimeout(() => {
-        level = 1;
-        bubble = 80;
-        bubbleValue.textContent = bubble;
-        startLevel();
-      }, 2000);
-    }
-
-    function showFinalWin() {
-      winScreen.style.display = "block";
-      winScreen.innerHTML = `
-        🎉 <br><br>
-        <strong>DU BIST ENTKOMMEN!</strong><br><br>
-        Der Algorithmus hat keine Macht mehr über dich.
-      `;
-    }
-
-    startLevel();
-  </script>
+</script>
 </body>
 </html>
