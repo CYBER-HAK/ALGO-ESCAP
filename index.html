@@ -8,7 +8,7 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #0f0f0f;               /* Feste Farbe → keine Streifen */
+    background: #0f0f0f;  /* fester Hintergrund → keine Streifen */
     color: white;
     margin: 0;
     padding: 0;
@@ -55,7 +55,6 @@
     border-left: 5px solid #00ffaa33;
     transition: 0.25s;
   }
-
   .post:hover {
     transform: scale(1.05);
     background: #303030;
@@ -79,11 +78,9 @@
     cursor: pointer;
     display: none;
   }
-
   #restartBtn:hover {
     background: #00ddaa;
   }
-
 </style>
 </head>
 
@@ -100,9 +97,10 @@
 <div id="feed"></div>
 
 <div id="winScreen">🎉 Du hast den Algorithmus besiegt!</div>
-
 <div id="gameOver">❌ Die Filterblase hat dich verschluckt…</div>
+
 <button id="restartBtn">Neu starten</button>
+
 
 <script>
 /* -----------------------------------------------------
@@ -119,6 +117,10 @@ const win = document.getElementById("winScreen");
 const gameOver = document.getElementById("gameOver");
 const restartBtn = document.getElementById("restartBtn");
 
+/* -----------------------------------------------------
+   LEVELS MIT EFFEKTGRÖSSEN
+----------------------------------------------------- */
+
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt merkwürdig einseitig… erkennst du die Muster?",
@@ -127,17 +129,22 @@ const levels = {
       { text: "Harmloses Meme", effect: -5 },
       { text: "Naturclip", effect: -5 },
       { text: "DIY-Idee", effect: -5 },
+
       { text: "Kurzes Lernvideo", effect: -10 },
       { text: "Wissensfakt", effect: -10 },
       { text: "Neutraler Newsartikel", effect: -10 },
       { text: "Mini-Doku", effect: -10 },
+
       { text: "Wissenschaftliche Erklärung", effect: -15 },
       { text: "Recherchierter Bericht", effect: -15 },
+
       { text: "Produktwerbung", effect: +5 },
       { text: "Clip ohne Inhalt", effect: +5 },
       { text: "Clickbait-Titel", effect: +5 },
+
       { text: "Lifestyle-Werbung", effect: +10 },
       { text: "Suggestiver Clip", effect: +10 },
+
       { text: "Verdrehte Fakten", effect: +15 },
       { text: "Populistische Aussage", effect: +15 }
     ]
@@ -148,16 +155,21 @@ const levels = {
     posts: [
       { text: "Feel-Good Video", effect: -5 },
       { text: "Info-Snippet", effect: -5 },
+
       { text: "Sachliche Nachricht", effect: -10 },
-      { text: "Erklärvideo Geschichte", effect: -10 },
+      { text: "Historisches Erklärvideo", effect: -10 },
       { text: "Faktenbericht", effect: -10 },
+
       { text: "Wissenschaftliche Analyse", effect: -15 },
-      { text: "Neutraler Podcast", effect: -15 },
+      { text: "Objektiver Podcast", effect: -15 },
+
       { text: "Clickbait Drama", effect: +5 },
       { text: "Emotionaler Monolog", effect: +5 },
+
       { text: "Streitkommentare", effect: +10 },
       { text: "Drama-Video", effect: +10 },
       { text: "Übertreibende Behauptung", effect: +10 },
+
       { text: "Skandalisiert", effect: +15 },
       { text: "Politisch verzerrt", effect: +15 }
     ]
@@ -168,13 +180,18 @@ const levels = {
     posts: [
       { text: "Niedliches Tier", effect: -5 },
       { text: "Naturclip", effect: -5 },
+
       { text: "Fakten-Check", effect: -10 },
       { text: "Neutraler Info-Clip", effect: -10 },
+
       { text: "Wissenschaft pur", effect: -15 },
+
       { text: "Clickbait: 'MUSST du sehen!!'", effect: +5 },
       { text: "Emotionales Statement", effect: +5 },
+
       { text: "Politisches Drama", effect: +10 },
       { text: "Meinungspost", effect: +10 },
+
       { text: "Manipulativer Viralclip", effect: +15 },
       { text: "Faktenverdreher", effect: +15 }
     ]
@@ -185,32 +202,32 @@ const levels = {
    GAME LOGIC
 ----------------------------------------------------- */
 
-let availablePosts = [];
-
 function startLevel() {
   bubble = 80;
   bubbleValue.textContent = bubble;
 
   storyBox.textContent = levels[level].story;
 
-  availablePosts = [...levels[level].posts];
+  feed.style.display = "block";
+  storyBox.style.display = "block";
+  win.style.display = "none";
 
-  feed.innerHTML = "";
   renderPosts();
 }
 
 function renderPosts() {
   feed.innerHTML = "";
 
-  while (feed.children.length < 4 && availablePosts.length > 0) {
-    let index = Math.floor(Math.random() * availablePosts.length);
-    let item = availablePosts.splice(index, 1)[0];
+  let pool = levels[level].posts; // Post-Pool wird NICHT gelöscht
+
+  while (feed.children.length < 4) {
+    let index = Math.floor(Math.random() * pool.length);
+    let item = pool[index]; // NICHT löschen!
 
     let div = document.createElement("div");
     div.className = "post";
     div.textContent = item.text;
     div.dataset.effect = item.effect;
-
     div.onclick = () => handlePost(div);
 
     feed.appendChild(div);
@@ -220,18 +237,19 @@ function renderPosts() {
 function handlePost(div) {
   let effect = Number(div.dataset.effect);
 
-  // Filterblase korrekt begrenzen
   bubble = Math.min(100, Math.max(0, bubble + effect));
   bubbleValue.textContent = bubble;
 
   div.remove();
 
   if (bubble <= 0) {
-    return nextLevel();
+    nextLevel();
+    return;
   }
 
   if (bubble >= 100) {
-    return triggerGameOver();
+    triggerGameOver();
+    return;
   }
 
   renderPosts();
@@ -258,23 +276,20 @@ function triggerGameOver() {
 }
 
 /* -----------------------------------------------------
-   RESTART BUTTON
+   RESTART
 ----------------------------------------------------- */
-restartBtn.onclick = () => {
-  // Reset
-  level = 1;
 
-  feed.style.display = "block";
-  storyBox.style.display = "block";
+restartBtn.onclick = () => {
+  level = 1;
   gameOver.style.display = "none";
   restartBtn.style.display = "none";
-
   startLevel();
 };
 
 /* -----------------------------------------------------
-   INITIAL START
+   INIT
 ----------------------------------------------------- */
+
 startLevel();
 </script>
 
