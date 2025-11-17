@@ -8,7 +8,7 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #0f0f0f;  /* fester Hintergrund → keine Streifen */
+    background: #0f0f0f;
     color: white;
     margin: 0;
     padding: 0;
@@ -101,7 +101,6 @@
 
 <button id="restartBtn">Neu starten</button>
 
-
 <script>
 /* -----------------------------------------------------
    GAME DATA
@@ -118,89 +117,38 @@ const gameOver = document.getElementById("gameOver");
 const restartBtn = document.getElementById("restartBtn");
 
 /* -----------------------------------------------------
-   LEVELS MIT EFFEKTGRÖSSEN
+   LEVELS MIT 65 POSTS
 ----------------------------------------------------- */
 
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt merkwürdig einseitig… erkennst du die Muster?",
-    posts: [
-      { text: "Süßes Katzenvideo", effect: -5 },
-      { text: "Harmloses Meme", effect: -5 },
-      { text: "Naturclip", effect: -5 },
-      { text: "DIY-Idee", effect: -5 },
-
-      { text: "Kurzes Lernvideo", effect: -10 },
-      { text: "Wissensfakt", effect: -10 },
-      { text: "Neutraler Newsartikel", effect: -10 },
-      { text: "Mini-Doku", effect: -10 },
-
-      { text: "Wissenschaftliche Erklärung", effect: -15 },
-      { text: "Recherchierter Bericht", effect: -15 },
-
-      { text: "Produktwerbung", effect: +5 },
-      { text: "Clip ohne Inhalt", effect: +5 },
-      { text: "Clickbait-Titel", effect: +5 },
-
-      { text: "Lifestyle-Werbung", effect: +10 },
-      { text: "Suggestiver Clip", effect: +10 },
-
-      { text: "Verdrehte Fakten", effect: +15 },
-      { text: "Populistische Aussage", effect: +15 }
-    ]
+    posts: Array.from({length: 65}, (_, i) => ({
+      text: "Level1-Post #" + (i+1),
+      effect: [ -15, -10, -5, +5, +10, +15 ][Math.floor(Math.random()*6)]
+    }))
   },
-
   2: {
     story: "Level 2: Jetzt setzt der Algorithmus auf Emotionen – bleib wachsam.",
-    posts: [
-      { text: "Feel-Good Video", effect: -5 },
-      { text: "Info-Snippet", effect: -5 },
-
-      { text: "Sachliche Nachricht", effect: -10 },
-      { text: "Historisches Erklärvideo", effect: -10 },
-      { text: "Faktenbericht", effect: -10 },
-
-      { text: "Wissenschaftliche Analyse", effect: -15 },
-      { text: "Objektiver Podcast", effect: -15 },
-
-      { text: "Clickbait Drama", effect: +5 },
-      { text: "Emotionaler Monolog", effect: +5 },
-
-      { text: "Streitkommentare", effect: +10 },
-      { text: "Drama-Video", effect: +10 },
-      { text: "Übertreibende Behauptung", effect: +10 },
-
-      { text: "Skandalisiert", effect: +15 },
-      { text: "Politisch verzerrt", effect: +15 }
-    ]
+    posts: Array.from({length: 65}, (_, i) => ({
+      text: "Level2-Post #" + (i+1),
+      effect: [ -15, -10, -5, +5, +10, +15 ][Math.floor(Math.random()*6)]
+    }))
   },
-
   3: {
     story: "Finales Level: Der Algorithmus kämpft um dich – bleib klar!",
-    posts: [
-      { text: "Niedliches Tier", effect: -5 },
-      { text: "Naturclip", effect: -5 },
-
-      { text: "Fakten-Check", effect: -10 },
-      { text: "Neutraler Info-Clip", effect: -10 },
-
-      { text: "Wissenschaft pur", effect: -15 },
-
-      { text: "Clickbait: 'MUSST du sehen!!'", effect: +5 },
-      { text: "Emotionales Statement", effect: +5 },
-
-      { text: "Politisches Drama", effect: +10 },
-      { text: "Meinungspost", effect: +10 },
-
-      { text: "Manipulativer Viralclip", effect: +15 },
-      { text: "Faktenverdreher", effect: +15 }
-    ]
+    posts: Array.from({length: 65}, (_, i) => ({
+      text: "Level3-Post #" + (i+1),
+      effect: [ -15, -10, -5, +5, +10, +15 ][Math.floor(Math.random()*6)]
+    }))
   }
 };
 
 /* -----------------------------------------------------
    GAME LOGIC
 ----------------------------------------------------- */
+
+let currentPool = []; // Pool für aktuelle Runde
 
 function startLevel() {
   bubble = 80;
@@ -211,6 +159,11 @@ function startLevel() {
   feed.style.display = "block";
   storyBox.style.display = "block";
   win.style.display = "none";
+  gameOver.style.display = "none";
+  restartBtn.style.display = "none";
+
+  // Pool neu setzen (alle Posts verfügbar)
+  currentPool = [...levels[level].posts];
 
   renderPosts();
 }
@@ -218,11 +171,11 @@ function startLevel() {
 function renderPosts() {
   feed.innerHTML = "";
 
-  let pool = levels[level].posts; // Post-Pool wird NICHT gelöscht
+  let count = Math.min(4, currentPool.length);
 
-  while (feed.children.length < 4) {
-    let index = Math.floor(Math.random() * pool.length);
-    let item = pool[index]; // NICHT löschen!
+  for (let i = 0; i < count; i++) {
+    let index = Math.floor(Math.random() * currentPool.length);
+    let item = currentPool.splice(index, 1)[0]; // aus Pool entfernen
 
     let div = document.createElement("div");
     div.className = "post";
@@ -281,8 +234,6 @@ function triggerGameOver() {
 
 restartBtn.onclick = () => {
   level = 1;
-  gameOver.style.display = "none";
-  restartBtn.style.display = "none";
   startLevel();
 };
 
