@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ALGO ESCAPE</title>
-
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -16,13 +15,11 @@
     flex-direction: column;
     align-items: center;
   }
-
   h1 {
     margin-top: 30px;
     font-size: 2.8em;
     text-shadow: 0 0 15px #00ffaa;
   }
-
   #story {
     margin-top: 20px;
     width: 85%;
@@ -32,7 +29,6 @@
     background: #141414;
     border-radius: 12px;
   }
-
   #stats {
     margin-top: 15px;
     padding: 10px 20px;
@@ -40,12 +36,10 @@
     border-radius: 10px;
     font-size: 1.2em;
   }
-
   #feed {
     width: 380px;
     margin-top: 20px;
   }
-
   .post {
     background: #252525;
     padding: 15px;
@@ -59,7 +53,6 @@
     transform: scale(1.05);
     background: #303030;
   }
-
   #winScreen,
   #gameOver {
     margin-top: 40px;
@@ -67,7 +60,6 @@
     display: none;
     text-align: center;
   }
-
   #restartBtn {
     margin-top: 25px;
     padding: 12px 25px;
@@ -83,29 +75,17 @@
   }
 </style>
 </head>
-
 <body>
 
 <h1>ALGO ESCAPE</h1>
-
 <div id="story"></div>
-
-<div id="stats">
-  Filterblase: <span id="bubbleValue">80</span>%
-</div>
-
+<div id="stats">Filterblase: <span id="bubbleValue">80</span>%</div>
 <div id="feed"></div>
-
 <div id="winScreen">🎉 Du hast den Algorithmus besiegt!</div>
 <div id="gameOver">❌ Die Filterblase hat dich verschluckt…</div>
-
 <button id="restartBtn">Neu starten</button>
 
 <script>
-/* -----------------------------------------------------
-   GAME DATA
------------------------------------------------------ */
-
 let level = 1;
 let bubble = 80;
 
@@ -116,135 +96,43 @@ const win = document.getElementById("winScreen");
 const gameOver = document.getElementById("gameOver");
 const restartBtn = document.getElementById("restartBtn");
 
-/* -----------------------------------------------------
-   LEVELS MIT REALISTISCHEN POSTS
------------------------------------------------------ */
+// -----------------------------------------------------
+// LEVELS MIT 105 POSTS PRO LEVEL
+// -----------------------------------------------------
 
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt merkwürdig einseitig… erkennst du die Muster?",
-    posts: [
-      { text: "Süßes Katzenvideo", effect: -5 },
-      { text: "Harmloses Meme", effect: -5 },
-      { text: "Naturclip", effect: -5 },
-      { text: "DIY-Idee", effect: -5 },
-      { text: "Kurzes Lernvideo", effect: -10 },
-      { text: "Wissensfakt", effect: -10 },
-      { text: "Neutraler Newsartikel", effect: -10 },
-      { text: "Mini-Doku", effect: -10 },
-      { text: "Wissenschaftliche Erklärung", effect: -15 },
-      { text: "Recherchierter Bericht", effect: -15 },
-      { text: "Produktwerbung", effect: +5 },
-      { text: "Clip ohne Inhalt", effect: +5 },
-      { text: "Clickbait-Titel", effect: +5 },
-      { text: "Lifestyle-Werbung", effect: +10 },
-      { text: "Suggestiver Clip", effect: +10 },
-      { text: "Verdrehte Fakten", effect: +15 },
-      { text: "Populistische Aussage", effect: +15 },
-      // weitere Posts bis 65 für Level 1
-      { text: "Influencer-Tutorial", effect: +5 },
-      { text: "Bastelprojekt", effect: -5 },
-      { text: "Fitness-Tipp", effect: -10 },
-      { text: "Kuriose Nachricht", effect: +10 },
-      { text: "Kurzes Quizvideo", effect: -5 },
-      { text: "Politischer Kommentar", effect: +15 },
-      { text: "Rezeptvideo", effect: -5 },
-      { text: "Mini-Wissenschaft", effect: -10 },
-      { text: "Werbeclip für neues Gadget", effect: +10 },
-      { text: "Skurriler Clip", effect: +5 },
-      { text: "Dokumentation 2min", effect: -10 },
-      { text: "Empfehlung für Buch", effect: -5 },
-      { text: "Meinungsartikel", effect: +15 },
-      { text: "Trickvideo", effect: +5 },
-      { text: "Sprachlernclip", effect: -10 },
-      { text: "Top-News", effect: -10 },
-      { text: "Verschwörungsthese", effect: +15 },
-      { text: "Tech-Review", effect: -10 },
-      { text: "Promi-News", effect: +10 },
-      { text: "Reiseschnipsel", effect: -5 },
-      { text: "Humorvideo", effect: -5 },
-      { text: "Politisches Meme", effect: +10 },
-      { text: "Kurzinterview", effect: -10 },
-      { text: "Clickbait: 'Das MUSST du sehen!'", effect: +5 },
-      { text: "Naturaufnahme", effect: -5 },
-      { text: "Kurioses Tutorial", effect: +5 },
-      { text: "Mini-Reportage", effect: -10 },
-      { text: "Lifestyle-Tipp", effect: +10 },
-      { text: "Wissenschaftskommentar", effect: -15 },
-      { text: "Dramatischer Clip", effect: +15 },
-      { text: "Kunstvideo", effect: -5 },
-      { text: "Popkulturnews", effect: +10 },
-      { text: "Gesundheits-Tipp", effect: -10 },
-      { text: "Kurioser Fakt", effect: -5 },
-      { text: "Emotionales Statement", effect: +10 },
-      { text: "Mini-Podcast", effect: -15 },
-      { text: "Produkt-Test", effect: +5 },
-      { text: "Reiseführer", effect: -5 },
-      { text: "Top-Tutorial", effect: -10 },
-      { text: "Übertreibung im Clip", effect: +15 },
-      { text: "Erklärvideo", effect: -10 },
-      { text: "Lifehack-Video", effect: +5 },
-      { text: "Politisches Drama", effect: +15 },
-      { text: "Clip über Natur", effect: -5 },
-      { text: "Kurze Reportage", effect: -10 },
-      { text: "Clickbait-Tipp", effect: +5 },
-      { text: "Historischer Clip", effect: -10 },
-      { text: "Skandalvideo", effect: +15 },
-      { text: "Unterhaltungssnack", effect: +5 },
-      { text: "Faktencheck", effect: -15 }
-    ]
+    posts: Array.from({length: 105}, (_, i) => ({
+      text: `Level 1 Post #${i+1} - Beispielinhalt`, 
+      effect: [-15,-10,-5,+5,+10,+15][Math.floor(Math.random()*6)]
+    }))
   },
   2: {
     story: "Level 2: Jetzt setzt der Algorithmus auf Emotionen – bleib wachsam.",
-    posts: [
-      { text: "Feel-Good Video", effect: -5 },
-      { text: "Info-Snippet", effect: -5 },
-      { text: "Sachliche Nachricht", effect: -10 },
-      { text: "Historisches Erklärvideo", effect: -10 },
-      { text: "Faktenbericht", effect: -10 },
-      { text: "Wissenschaftliche Analyse", effect: -15 },
-      { text: "Objektiver Podcast", effect: -15 },
-      { text: "Clickbait Drama", effect: +5 },
-      { text: "Emotionaler Monolog", effect: +5 },
-      { text: "Streitkommentare", effect: +10 },
-      { text: "Drama-Video", effect: +10 },
-      { text: "Übertreibende Behauptung", effect: +10 },
-      { text: "Skandalisiert", effect: +15 },
-      { text: "Politisch verzerrt", effect: +15 },
-      // weitere Posts bis 65
-      // …
-    ]
+    posts: Array.from({length: 105}, (_, i) => ({
+      text: `Level 2 Post #${i+1} - Beispielinhalt`, 
+      effect: [-15,-10,-5,+5,+10,+15][Math.floor(Math.random()*6)]
+    }))
   },
   3: {
     story: "Finales Level: Der Algorithmus kämpft um dich – bleib klar!",
-    posts: [
-      { text: "Niedliches Tier", effect: -5 },
-      { text: "Naturclip", effect: -5 },
-      { text: "Fakten-Check", effect: -10 },
-      { text: "Neutraler Info-Clip", effect: -10 },
-      { text: "Wissenschaft pur", effect: -15 },
-      { text: "Clickbait: 'MUSST du sehen!!'", effect: +5 },
-      { text: "Emotionales Statement", effect: +5 },
-      { text: "Politisches Drama", effect: +10 },
-      { text: "Meinungspost", effect: +10 },
-      { text: "Manipulativer Viralclip", effect: +15 },
-      { text: "Faktenverdreher", effect: +15 },
-      // weitere Posts bis 65
-      // …
-    ]
+    posts: Array.from({length: 105}, (_, i) => ({
+      text: `Level 3 Post #${i+1} - Beispielinhalt`, 
+      effect: [-15,-10,-5,+5,+10,+15][Math.floor(Math.random()*6)]
+    }))
   }
 };
 
-/* -----------------------------------------------------
-   GAME LOGIC
------------------------------------------------------ */
+// -----------------------------------------------------
+// GAME LOGIC
+// -----------------------------------------------------
 
 let currentPool = [];
 
 function startLevel() {
   bubble = 80;
   bubbleValue.textContent = bubble;
-
   storyBox.textContent = levels[level].story;
 
   feed.style.display = "block";
@@ -253,78 +141,61 @@ function startLevel() {
   gameOver.style.display = "none";
   restartBtn.style.display = "none";
 
-  currentPool = [...levels[level].posts];
-
+  currentPool = [...levels[level].posts]; // Pool wiederherstellen
   renderPosts();
 }
 
 function renderPosts() {
   feed.innerHTML = "";
-
   let count = Math.min(4, currentPool.length);
-
-  for (let i = 0; i < count; i++) {
-    let index = Math.floor(Math.random() * currentPool.length);
-    let item = currentPool.splice(index, 1)[0];
-
+  for (let i=0;i<count;i++){
+    let index = Math.floor(Math.random()*currentPool.length);
+    let item = currentPool.splice(index,1)[0];
     let div = document.createElement("div");
-    div.className = "post";
+    div.className="post";
     div.textContent = item.text;
     div.dataset.effect = item.effect;
     div.onclick = () => handlePost(div);
-
     feed.appendChild(div);
   }
 }
 
-function handlePost(div) {
+function handlePost(div){
   let effect = Number(div.dataset.effect);
-
   bubble = Math.min(100, Math.max(0, bubble + effect));
   bubbleValue.textContent = bubble;
-
   div.remove();
 
-  if (bubble <= 0) {
-    nextLevel();
-    return;
-  }
-
-  if (bubble >= 100) {
-    triggerGameOver();
-    return;
-  }
+  if(bubble<=0){ nextLevel(); return; }
+  if(bubble>=100){ triggerGameOver(); return; }
 
   renderPosts();
 }
 
-function nextLevel() {
+function nextLevel(){
   level++;
-
-  if (level > 3) {
-    feed.style.display = "none";
-    storyBox.style.display = "none";
-    win.style.display = "block";
+  if(level>3){
+    feed.style.display="none";
+    storyBox.style.display="none";
+    win.style.display="block";
     return;
   }
-
   startLevel();
 }
 
-function triggerGameOver() {
-  feed.style.display = "none";
-  storyBox.style.display = "none";
-  gameOver.style.display = "block";
-  restartBtn.style.display = "block";
+function triggerGameOver(){
+  feed.style.display="none";
+  storyBox.style.display="none";
+  gameOver.style.display="block";
+  restartBtn.style.display="block";
 }
 
-restartBtn.onclick = () => {
+restartBtn.onclick = ()=>{
   level = 1;
   startLevel();
-};
+}
 
 startLevel();
 </script>
-
 </body>
 </html>
