@@ -55,6 +55,7 @@
     border-left: 5px solid #00ffaa33;
     transition: 0.25s;
   }
+
   .post:hover {
     transform: scale(1.05);
     background: #303030;
@@ -78,6 +79,7 @@
     cursor: pointer;
     display: none;
   }
+
   #restartBtn:hover {
     background: #00ddaa;
   }
@@ -105,6 +107,7 @@
 /* ======================================================
    GAME STATE
 ====================================================== */
+
 let level = 1;
 let bubble = 80;
 
@@ -118,79 +121,79 @@ const restartBtn = document.getElementById("restartBtn");
 let originalPools;
 
 /* ======================================================
-   POSTS (105 pro Level)
+   GESAMTE POSTS (Beispiele — kann ich auf 105 erweitern)
 ====================================================== */
+
 const levels = {
   1: {
     story: "Level 1: Dein Feed wirkt leicht verzerrt… erkennst du die Muster?",
     posts: [
-      /* --- 105 LEVEL-1 POSTS --- */
-      "Süßes Katzenvideo – vollkommen harmlos… oder doch nicht?",
-      "Ein entspannter Naturclip mit beruhigender Musik.",
-      "Ein harmloses Meme über den Morgenkaffee.",
-      "DIY-Idee: Aus alten Gläsern neue Deko basteln.",
-      "Kurzes Lernvideo: Warum der Himmel blau ist.",
-      "Ein neutraler Newsartikel über das Wetter.",
-      "Wissensfakt: Schnecken haben 14.000 Zähne.",
-      "Mini-Doku über die Geschichte des Fahrrads.",
-      "Sachliche Info: Wie funktioniert ein Motor?",
-      "Wissenschaftliche Erklärung: Was sind Neuronen?",
-      "Werbeclip: „Dieses Produkt brauchst du unbedingt!“",
+      "Süßes Katzenvideo – harmlos, aber sehr einseitig.",
+      "Ein ruhiger Naturclip aus dem Wald.",
+      "Ein alltägliches Meme über Kaffee.",
+      "DIY: Alte Gläser werden hübsche Deko.",
+      "Kurzes Lernvideo über den Regenbogen.",
+      "Neutraler Wetterbericht.",
+      "Wissensfakt: Honig verdirbt nie.",
+      "Mini-Doku über Ozeane.",
+      "Sachliche Info: Wie Strom erzeugt wird.",
+      "Wissenschaftliche Erklärung über Sterne.",
+      "Werbung: „Du brauchst dieses Gadget!“",
       "Erklärvideo: Warum Schlaf wichtig ist.",
-      "Clickbait: „Dieser Trick wird dein Leben verändern!“",
-      "Lifestyle-Post: Morgenroutine für mehr Energie.",
-      "Suggestiver Clip: „Willst du nicht auch so leben?“",
+      "Clickbait: „DIES wird dein Leben verändern!!“",
+      "Lifestyle-Post: Morgenroutine für mehr Fokus.",
+      "Suggestiver Clip: „Wärst du nicht auch gern so erfolgreich?“",
       "Verdrehte Fakten über Ernährung.",
-      "Populistische Behauptung über Technik.",
-      "Unvollständige Info über ein Naturphänomen.",
-      "Übertrieben positive Produktbewertung.",
-      "Sehr emotionales Musikvideo.",
-      // … bis insgesamt 105 (kürze hier, aber im echten Code stehen alle 105)
+      "Populistische Aussage über Technik.",
+      "Einseitiger Kommentar über Social Media.",
+      "Emotionales Musikvideo.",
+      "Übertrieben positive Produktbewertung."
     ]
   },
 
   2: {
-    story: "Level 2: Der Algorithmus setzt auf Emotionen → bleib wachsam.",
+    story: "Level 2: Der Algorithmus setzt auf Emotionen – bleib wachsam.",
     posts: [
-      /* --- 105 LEVEL-2 POSTS --- */
-      "Feel-Good Video: Menschen helfen sich gegenseitig.",
-      "Emotionaler Monolog über Selbstfindung.",
-      "Clickbait Drama: „Ihr werdet nicht glauben, was passiert ist!“",
-      "Streitkommentare: Zwei Influencer attackieren sich.",
-      "Übertriebene Behauptung: „Alles wird schlimmer!“",
-      "Faktenbericht über ein aktuelles Ereignis.",
-      "Objektiver Podcast über Technologie.",
-      "Skandalpost: „Die Wahrheit wird verschwiegen!“",
-      "Politisch verzerrter Kurzclip.",
-      "Drama-Video über eine überzogene Situation.",
-      // … insgesamt 105
+      "Feel-Good Video: Fremde helfen sich.",
+      "Emotionaler Monolog über Veränderung.",
+      "Clickbait Drama: „Das wirst du NICHT glauben!“",
+      "Öffentlicher Streit zwischen Influencern.",
+      "Übertreibung: „Alles wird immer schlimmer!“",
+      "Faktenbericht über aktuelles Thema.",
+      "Objektiver Podcast über Politik.",
+      "Skandalpost: „Die Wahrheit wird unterdrückt!“",
+      "Politischer Kurzclip mit Verzerrung.",
+      "Überzogenes Drama-Video."
     ]
   },
 
   3: {
     story: "Finales Level: Der Algorithmus kämpft hart um dich!",
     posts: [
-      /* --- 105 LEVEL-3 POSTS --- */
-      "Niedliches Tier, das durch den Schnee springt.",
-      "Fakten-Check: Gerüchte über ein Trendthema.",
+      "Niedliches Tier im Schnee.",
+      "Fakten-Check zu einem Trend.",
       "Neutraler Info-Clip über Wissenschaft.",
-      "Clickbait: „Du MUSST das gesehen haben!!“",
+      "Clickbait: „DU MUSST DAS SEHEN!!“",
       "Emotionales Statement über Ungerechtigkeit.",
-      "Politisches Drama: alles ist eine Krise.",
+      "Politisches Drama: Krise überall.",
       "Meinungspost mit starker Übertreibung.",
-      "Manipulativer Viralclip, der Angst erzeugt.",
-      "Verdrehte Fakten, die Panik schüren.",
-      // … insgesamt 105
+      "Manipulativer Viralclip voller Angst.",
+      "Faktenverdreher über Gesundheit."
     ]
   }
 };
 
 /* ======================================================
-   SETUP
+   DEEP COPY HELFER
 ====================================================== */
+
 function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
+
+/* ======================================================
+   LEVEL START
+====================================================== */
 
 function startLevel() {
   bubble = 80;
@@ -204,40 +207,49 @@ function startLevel() {
   gameOver.style.display = "none";
 
   // Reset Pool für dieses Level
-  originalPools[level] = deepCopy(levels[level].posts);
   levels[level].posts = deepCopy(originalPools[level]);
 
   renderPosts();
 }
 
 /* ======================================================
-   POSTS RENDERN
+   POSTS ANZEIGEN (keine Duplikate!)
 ====================================================== */
+
 function renderPosts() {
   feed.innerHTML = "";
 
   let pool = levels[level].posts;
 
-  // Wenn weniger als 4 Posts übrig sind → alle anzeigen
-  let amount = Math.min(4, pool.length);
+  if (pool.length === 0) return;
 
-  for (let i = 0; i < amount; i++) {
+  let amount = Math.min(4, pool.length);
+  let usedThisRound = [];
+
+  while (usedThisRound.length < amount) {
     let index = Math.floor(Math.random() * pool.length);
     let text = pool[index];
+
+    // Wenn schon angezeigt → überspringen
+    if (usedThisRound.includes(text)) continue;
+
+    usedThisRound.push(text);
 
     let div = document.createElement("div");
     div.className = "post";
     div.textContent = text;
     div.dataset.effect = getEffect(text);
-    div.onclick = () => handlePost(div, index);
+
+    div.onclick = () => handlePostClick(text, div);
 
     feed.appendChild(div);
   }
 }
 
 /* ======================================================
-   POST EFFECTS — automatisch
+   EFFEKT ERKENNEN
 ====================================================== */
+
 function getEffect(text) {
   if (text.includes("Clickbait") || text.includes("Drama") || text.includes("Verdrehte") || text.includes("Manipulativ") || text.includes("Politisch"))
     return +10;
@@ -257,15 +269,16 @@ function getEffect(text) {
 /* ======================================================
    POST KLICKEN
 ====================================================== */
-function handlePost(div, index) {
+
+function handlePostClick(text, div) {
   let effect = Number(div.dataset.effect);
 
-  // Filterblase verändern
   bubble = Math.min(100, Math.max(0, bubble + effect));
   bubbleValue.textContent = bubble;
 
-  // Post aus Pool entfernen
-  levels[level].posts.splice(index, 1);
+  // Post dauerhaft aus dem Level-Pool löschen
+  let i = levels[level].posts.indexOf(text);
+  if (i !== -1) levels[level].posts.splice(i, 1);
 
   div.remove();
 
@@ -283,11 +296,11 @@ function handlePost(div, index) {
 }
 
 /* ======================================================
-   LEVEL / GAMEOVER
+   LEVEL WECHSEL
 ====================================================== */
+
 function nextLevel() {
   level++;
-
   if (level > 3) {
     feed.style.display = "none";
     storyBox.style.display = "none";
@@ -297,6 +310,10 @@ function nextLevel() {
 
   startLevel();
 }
+
+/* ======================================================
+   GAME OVER
+====================================================== */
 
 function triggerGameOver() {
   feed.style.display = "none";
@@ -308,19 +325,18 @@ function triggerGameOver() {
 /* ======================================================
    RESTART
 ====================================================== */
+
 restartBtn.onclick = () => {
   level = 1;
   gameOver.style.display = "none";
   restartBtn.style.display = "none";
-  levels[1].posts = deepCopy(originalPools[1]);
-  levels[2].posts = deepCopy(originalPools[2]);
-  levels[3].posts = deepCopy(originalPools[3]);
   startLevel();
 };
 
 /* ======================================================
    INIT
 ====================================================== */
+
 originalPools = deepCopy({
   1: levels[1].posts,
   2: levels[2].posts,
