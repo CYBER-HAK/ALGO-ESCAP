@@ -1,100 +1,90 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>ALGO ESCAPE</title>
-
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background: #0f0f0f;
-    color: white;
+    color: #ffffff;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-
   h1 {
-    margin-top: 30px;
-    font-size: 2.8em;
-    text-shadow: 0 0 15px #00ffaa;
+    margin-top: 28px;
+    font-size: 2.4rem;
+    text-shadow: 0 0 12px #00ffaa;
   }
-
   #story {
-    margin-top: 20px;
-    width: 85%;
+    margin-top: 18px;
+    width: 90%;
+    max-width: 900px;
     text-align: center;
-    padding: 15px;
-    font-size: 1.2em;
+    padding: 12px;
+    font-size: 1.05rem;
     background: #141414;
-    border-radius: 12px;
-  }
-
-  #stats {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background: #222;
     border-radius: 10px;
-    font-size: 1.2em;
   }
-
+  #stats {
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: #222;
+    border-radius: 8px;
+    font-size: 1.05rem;
+  }
   #feed {
     width: 380px;
-    margin-top: 20px;
+    max-width: 90%;
+    margin-top: 18px;
   }
-
   .post {
     background: #252525;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 12px;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 10px;
     cursor: pointer;
     border-left: 5px solid #00ffaa33;
-    transition: 0.25s;
+    transition: transform .18s ease, background .18s ease;
   }
-
   .post:hover {
-    transform: scale(1.05);
+    transform: scale(1.03);
     background: #303030;
   }
-
-  #winScreen,
-  #gameOver {
-    margin-top: 40px;
-    font-size: 2em;
+  #winScreen, #gameOver {
+    margin-top: 36px;
+    font-size: 1.6rem;
     display: none;
     text-align: center;
   }
-
   #restartBtn {
-    margin-top: 25px;
-    padding: 12px 25px;
-    font-size: 1.2em;
+    margin-top: 20px;
+    padding: 10px 18px;
+    font-size: 1.05rem;
     background: #00ffaa;
+    color: #001;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     display: none;
   }
-
-  #restartBtn:hover {
-    background: #00ddaa;
+  #restartBtn:hover { background: #00ddaa; }
+  @media (min-width:800px) {
+    #feed { width: 420px; }
+    h1 { font-size: 3rem; }
   }
 </style>
 </head>
-
 <body>
-
 <h1>ALGO ESCAPE</h1>
 
 <div id="story"></div>
 
-<div id="stats">
-  Filterblase: <span id="bubbleValue">80</span>%
-</div>
+<div id="stats">Filterblase: <span id="bubbleValue">80</span>%</div>
 
 <div id="feed"></div>
 
@@ -104,247 +94,458 @@
 <button id="restartBtn">Neu starten</button>
 
 <script>
-/* ======================================================
-   GAME STATE
-====================================================== */
+/* ===========================================
+   GAME STATE & HELPERS
+   - Variante: kurze social-media Posts
+   - 105 Posts pro Level, keine Emojis, kurze Sätze
+   =========================================== */
 
 let level = 1;
 let bubble = 80;
 
-const bubbleValue = document.getElementById("bubbleValue");
-const storyBox = document.getElementById("story");
-const feed = document.getElementById("feed");
-const win = document.getElementById("winScreen");
-const gameOver = document.getElementById("gameOver");
-const restartBtn = document.getElementById("restartBtn");
+const bubbleValue = document.getElementById('bubbleValue');
+const storyBox = document.getElementById('story');
+const feed = document.getElementById('feed');
+const win = document.getElementById('winScreen');
+const gameOver = document.getElementById('gameOver');
+const restartBtn = document.getElementById('restartBtn');
 
-let originalPools;
+function deepCopy(obj){ return JSON.parse(JSON.stringify(obj)); }
 
-/* ======================================================
-   GESAMTE POSTS (Beispiele — kann ich auf 105 erweitern)
-====================================================== */
+/* ===========================================
+   LEVEL POSTS (105 pro Level, social-media Style)
+   - Keine Zahlen in den Texte, kurze Sätze
+   =========================================== */
 
 const levels = {
   1: {
-    story: "Level 1: Dein Feed wirkt leicht verzerrt… erkennst du die Muster?",
+    story: "Level 1: Leichte Ablenkungen und trendige Clips füllen dein Feed. Erkennst du die Muster?",
     posts: [
-      "Süßes Katzenvideo – harmlos, aber sehr einseitig.",
-      "Ein ruhiger Naturclip aus dem Wald.",
-      "Ein alltägliches Meme über Kaffee.",
-      "DIY: Alte Gläser werden hübsche Deko.",
-      "Kurzes Lernvideo über den Regenbogen.",
-      "Neutraler Wetterbericht.",
-      "Wissensfakt: Honig verdirbt nie.",
-      "Mini-Doku über Ozeane.",
-      "Sachliche Info: Wie Strom erzeugt wird.",
-      "Wissenschaftliche Erklärung über Sterne.",
-      "Werbung: „Du brauchst dieses Gadget!“",
-      "Erklärvideo: Warum Schlaf wichtig ist.",
-      "Clickbait: „DIES wird dein Leben verändern!!“",
-      "Lifestyle-Post: Morgenroutine für mehr Fokus.",
-      "Suggestiver Clip: „Wärst du nicht auch gern so erfolgreich?“",
-      "Verdrehte Fakten über Ernährung.",
-      "Populistische Aussage über Technik.",
-      "Einseitiger Kommentar über Social Media.",
-      "Emotionales Musikvideo.",
-      "Übertrieben positive Produktbewertung."
+      /* 105 kurze social-media Posts für Level 1 */
+      "Ich kann nicht glauben, wie entspannt dieses Katzenvideo ist.",
+      "Das ist so ein beruhigender Naturclip.",
+      "Wer kennt dieses klassische Morgenmeme?",
+      "Ein simples DIY, das jeder nachmachen kann.",
+      "Kleiner Tipp fürs Aufräumen in 30 Sekunden.",
+      "Das sieht so ästhetisch aus, sofort gespeichert.",
+      "Schnelle Kochidee für einen stressigen Abend.",
+      "Kurzer Workout-Hack, funktioniert echt.",
+      "Das entspannte Meeresrauschen wirkt echt beruhigend.",
+      "Wer hätte gedacht, dass so wenig so viel verändern kann.",
+      "Ein süßer Hund, der gerade sehr verloren wirkt.",
+      "Das ist der schönste Sonnenuntergang heute.",
+      "Kleine Achtsamkeitsübung zum Mitmachen.",
+      "So einfach geht ein schneller Frühstücks-Smoothie.",
+      "Minimaler Tipp für besseren Schlaf.",
+      "Kurzer Einblick in eine kreative Ecke.",
+      "Schon wieder ein Trend, aber irgendwie nett.",
+      "Das ist so ein Feelgood-Moment.",
+      "Schade, dass das keine längere Version hat.",
+      "Kleine Bastelidee für Zuhause.",
+      "Ein kurzer Fakt, der interessant klingt.",
+      "Das sieht so entspannend aus, ich will das öfter sehen.",
+      "Kurzer Clip über Pflanzenpflege im Alltag.",
+      "Das Meme trifft meinen Montag.",
+      "Ein schneller Lifehack für Kabelwirrwarr.",
+      "Dieser Sound ist irgendwie beruhigend.",
+      "Kurze Story, die zum Nachdenken anregt.",
+      "Fast meditativer Zeitraffer einer Blume.",
+      "Ein DIY-Geschenk in 60 Sekunden.",
+      "Kleine Technikempfehlung für Zuhause.",
+      "Dieser Blick auf die Stadt ist sehr cineastisch.",
+      "Schnelles Video, das einfach gute Laune macht.",
+      "Ein kurzer Tipp für bessere Konzentration.",
+      "Kurzporträt einer interessanten Person.",
+      "Das ist zwar kurz, aber schön gemacht.",
+      "Ein simpler Rezepttipp, den jeder schafft.",
+      "Kurzes Interview mit einer kreativen Idee.",
+      "Das ist so beruhigend, ich schaue es nochmal.",
+      "Kleines Tutorial für Alltagstricks.",
+      "Ein Moment, der mich gerade sehr lächeln lässt.",
+      "Wie praktisch ist dieses einfache Tool.",
+      "Dieses Stück Musik passt perfekt zum Clip.",
+      "Ein Clip, der Erinnerungen weckt.",
+      "Kurzer Einblick in eine kleine Werkstatt.",
+      "Das kurze Erklärvideo war echt hilfreich.",
+      "Ein minimalistischer Dekorationstipp.",
+      "Schnelle Inspiration für das Wochenende.",
+      "Das ist wirklich eine nette Idee zum Teilen.",
+      "Ein Clip, der einfach entspannt.",
+      "Kurzer Tipp für energiesparendes Verhalten.",
+      "Das Foto ist so stimmig.",
+      "Ein kurzer Fakt, der meine Sicht verändert.",
+      "Das sieht nach einer einfachen Lösung aus.",
+      "Schnelle Anleitung zum Pflanzen umtopfen.",
+      "Dieses kurze Stück Handwerk ist beeindruckend.",
+      "Das ist so ein beruhigender Ausschnitt.",
+      "Kleiner Trick, der überraschend gut funktioniert.",
+      "Kurzclip mit schönem Licht und Ton.",
+      "Ein Tipp, der direkt anwendbar ist.",
+      "Kurzes Experiment, das wirklich funktioniert.",
+      "Das Meme hat mich echt zum Lachen gebracht.",
+      "Schnelle Zusammenfassung eines Buchs in 30 Sekunden.",
+      "Das ist simpel und sehr hilfreich.",
+      "Ein kurzer Blick hinter die Kulissen.",
+      "Das war unvermittelt sehr motivierend.",
+      "Kurzer Beitrag über nachhaltige Gewohnheiten.",
+      "Das Video macht wirklich Lust, es selbst zu probieren.",
+      "Kleiner Tipp, um Morgenstress zu reduzieren.",
+      "Das ist ein so ruhiger, kurzer Moment.",
+      "Kurze Anregung für kreative Pausen.",
+      "Ein simpler Haushalts-Hack, funktioniert gut.",
+      "Dieses kurze Interview ist überraschend ehrlich.",
+      "Das ist ein Moment, den man teilen sollte.",
+      "Kurzer Überblick über einen interessanten Fakt.",
+      "Das ist ein hübsches Zeitraffer-Video.",
+      "Ein sehr kurzer, motivierender Satz.",
+      "Schnelle Anleitung für eine kleine Reparatur.",
+      "Das ist erstaunlich beruhigend anzusehen.",
+      "Kurzer Tipp für eine bessere Morgenroutine.",
+      "Ein Clip, der einfach gute Stimmung macht.",
+      "Kleiner Denkanstoß in wenigen Sekunden.",
+      "Das ist ein sehr schönes Bildmaterial.",
+      "Kurzes Howto, das sehr nützlich ist.",
+      "Ein Clip, der mich sofort neugierig macht.",
+      "Das ist einfach angenehm zum Anschauen.",
+      "Ein kurzer Einblick in ein interessantes Hobby.",
+      "Dieses Video hat mir einen neuen Blick gegeben.",
+      "Kurzer Tipp: so vermeidest du Stress im Alltag.",
+      "Das ist ein sehr netter, kleiner Clip."
     ]
   },
 
   2: {
-    story: "Level 2: Der Algorithmus setzt auf Emotionen – bleib wachsam.",
+    story: "Level 2: Emotionen und Polarisierung nehmen zu. Bleib aufmerksam bei lautem Ton und großen Aussagen.",
     posts: [
-      "Feel-Good Video: Fremde helfen sich.",
-      "Emotionaler Monolog über Veränderung.",
-      "Clickbait Drama: „Das wirst du NICHT glauben!“",
-      "Öffentlicher Streit zwischen Influencern.",
-      "Übertreibung: „Alles wird immer schlimmer!“",
-      "Faktenbericht über aktuelles Thema.",
-      "Objektiver Podcast über Politik.",
-      "Skandalpost: „Die Wahrheit wird unterdrückt!“",
-      "Politischer Kurzclip mit Verzerrung.",
-      "Überzogenes Drama-Video."
+      /* 105 kurze social-media Posts für Level 2 */
+      "Hat jemand das Drama um den Influencer gesehen?",
+      "Warum wird über das Thema nicht mehr offen geredet?",
+      "Das hier macht mich wirklich wütend.",
+      "Ich finde das total ungerecht, das muss geteilt werden.",
+      "Schon wieder ein Beitrag, der alles zuspitzt.",
+      "Ist das wirklich so schlimm, wie alle sagen?",
+      "Das klingt nach einer Nachricht, die viele betrifft.",
+      "Wie kann man so völlig falsch liegen?",
+      "Dieser Clip wirkt so emotional und direkt.",
+      "Man sieht wieder, wie schnell sich Geschichten drehen.",
+      "Dieses Video stellt alles in Frage.",
+      "Es fällt auf, dass nur bestimmte Stimmen laut werden.",
+      "Das ist ein Moment, der polarisiert.",
+      "Ich finde diese Darstellung sehr einseitig.",
+      "Warum akzeptieren manche Menschen solche Aussagen?",
+      "Das macht deutlich, wie manipuliert wir werden können.",
+      "Ein Beitrag, der sehr starke Reaktionen auslöst.",
+      "Das ist eine klare Aufforderung, sich zu positionieren.",
+      "So entstehen schnell Lagerdenken und Konflikte.",
+      "Das ist ein emotionaler Appell statt eine Diskussion.",
+      "Man merkt, wie stark die Sprache eskaliert.",
+      "Hier wird mit Angst gearbeitet, das ist problematisch.",
+      "Das Video bringt sofort Leute gegeneinander.",
+      "Warum wird hier nicht sachlich diskutiert?",
+      "Das ist ein Beispiel für schnelle Empörung.",
+      "Der Clip zeigt nur eine Seite der Geschichte.",
+      "Das ist manipulativ geschnitten und wirkt bewusst provokant.",
+      "Viele reagieren sofort, ohne nachzufragen.",
+      "Das ist ein typischer ‚wir gegen die‘ Beitrag.",
+      "Manchmal reicht ein kurzer Satz, um zu spalten.",
+      "Dieses Video versucht, Angst zu schüren.",
+      "Das ist emotional sehr zugespitzt gemacht.",
+      "Warum informiert niemand neutral über den Kern?",
+      "Das ist eine sehr starke Meinungsäußerung.",
+      "Das fühlt sich an wie ein Aufruf zur Empörung.",
+      "Solche Clips verbreiten sich rasant ohne Prüfung.",
+      "Das ist ein echtes Beispiel für Polarisierung.",
+      "Hier wird viel behauptet, wenig belegt.",
+      "Das ist emotional aufgeladen und wirkt unfair.",
+      "Ein Beitrag, der Diskussionen sofort eskaliert.",
+      "Das ist wieder so ein viraler Aufruhr.",
+      "Dieser Clip simplifiziert ein komplexes Thema.",
+      "Traurig, wie schnell Menschen urteilen.",
+      "Das ist ein klassisches Beispiel für Shitstorm-Nahrung.",
+      "Dieses Video setzt auf Empörung statt Fakten.",
+      "Das ist eine kurze, starke Provokation.",
+      "Warum wird hier so oft übertrieben dargestellt?",
+      "Das ist eine sehr einseitige Darstellung.",
+      "Man spürt sofort die Wirkung auf Emotionen.",
+      "Dieses Posting will Empörung provozieren.",
+      "Das ist ein leicht manipulativer Aufruf.",
+      "Ein kurzes Drama, das großes Echo erzeugt.",
+      "Das Video macht vieles schwarzweiß.",
+      "Das ist eine sehr polarisierende Kurzmeldung.",
+      "Hier fehlt oft die Kontextgabe, die nötig wäre.",
+      "Dieses Format setzt auf starke Gefühle.",
+      "Das ist ein klarer Versuch, eine Diskussion anzuheizen.",
+      "Viele liken, ohne wirklich nachzulesen.",
+      "Das ist ein Beitrag, der starke Meinungen verstärkt.",
+      "Diese Sprache schürt Ablehnung statt Verständnis.",
+      "Das ist ein emotionales, aber wenig belegtes Statement.",
+      "Manchmal reicht 30 Sekunden, um eine Meinung zu formen.",
+      "Das Video zielt auf Deine Reaktion ab.",
+      "Wieder ein Clip, der die Leute gegeneinander bringt.",
+      "Das ist so ein typischer Aufruf zur Empörung.",
+      "Dieses Posting verbreitet Angst statt Informationen.",
+      "Das ist emotional gemischt und sehr laut.",
+      "Eine sehr suggestive Darstellung, die viele mitzieht.",
+      "Das ist ein Aufruf, jetzt Stellung zu beziehen.",
+      "Das ist ein kurzes, aber heftiges Statement.",
+      "Hier wird aus wenigen Fakten eine große Story gemacht.",
+      "Das ist eine sehr zugespitzte Meinung.",
+      "Dieses Video spielt mit den Gefühlen der Zuschauer.",
+      "Eine starke Behauptung ohne klare Belege.",
+      "Das ist ein Beispiel für emotionales Storytelling.",
+      "Dieses Posting will unbedingt geteilt werden.",
+      "Das wirkt wie eine bewusst provozierende Nachricht.",
+      "Das ist ein Clip, der stark polarisiert.",
+      "Das ist eine sehr zugespitzte Darstellung.",
+      "Ein Beitrag, der Konflikte schürt statt zu lösen.",
+      "Das ist ein emotionaler Push-Inhalt.",
+      "Dieses Video bringt Menschen auf die Barrikaden.",
+      "Das ist ein kurzer, aber sehr lauter Aufruf.",
+      "Viele reagieren intuitiv, nicht reflektiert.",
+      "Das ist eines dieser Beiträge, die spalten.",
+      "Dieses Posting nimmt stark Stellung ohne Kontext.",
+      "Das ist ein typischer Viral-Empörungsclip.",
+      "Das Video lässt kaum Raum für Nuancen.",
+      "Das ist ein kurzes, sehr zugespitztes Stück."
     ]
   },
 
   3: {
-    story: "Finales Level: Der Algorithmus kämpft hart um dich!",
+    story: "Level 3: Harte Manipulationen und klare Falschinformationen werden häufiger. Bleib kritisch und prüf Quellen.",
     posts: [
-      "Niedliches Tier im Schnee.",
-      "Fakten-Check zu einem Trend.",
-      "Neutraler Info-Clip über Wissenschaft.",
-      "Clickbait: „DU MUSST DAS SEHEN!!“",
-      "Emotionales Statement über Ungerechtigkeit.",
-      "Politisches Drama: Krise überall.",
-      "Meinungspost mit starker Übertreibung.",
-      "Manipulativer Viralclip voller Angst.",
-      "Faktenverdreher über Gesundheit."
+      /* 105 kurze social-media Posts für Level 3 */
+      "Achtung, hier wird bewusst übertrieben dargestellt.",
+      "Dieses Video macht aus wenig eine große Bedrohung.",
+      "Ein Beitrag, der Fakten stark vereinfacht.",
+      "Das hier klingt so endgültig, obwohl es das nicht ist.",
+      "Dieser Clip behauptet sehr viel ohne Nachweis.",
+      "Hier werden Gefühle ausgenutzt, um Zustimmung zu erzwingen.",
+      "Das ist ein sehr manipulativer Zusammenschnitt.",
+      "Dieses Posting stellt falsche Zusammenhänge her.",
+      "Achtung bei pauschalen Aussagen ohne Quellen.",
+      "Das ist eine gezielte Zuspitzung eines Problems.",
+      "Dieses Video verbreitet unbelegte Behauptungen.",
+      "Ein Beitrag, der Angst statt Infos streut.",
+      "Das ist ein Versuch, Feindbilder zu schaffen.",
+      "Dieses Posting stellt Schuld sehr eindimensional dar.",
+      "Hier werden Zahlen ohne Kontext präsentiert.",
+      "Das Video suggeriert mehr Wissen, als vorhanden ist.",
+      "Dieses Posting verdreht Zusammenhänge absichtlich.",
+      "Achtung, hier wird mit extremen Beispielen gearbeitet.",
+      "Dieses Clipformat setzt auf Schock statt Kontext.",
+      "Das ist ein sehr vereinfachtes Narrativ.",
+      "Dieses Posting stachelt Stimmung an statt zu informieren.",
+      "Hier werden Ursache und Wirkung falsch verbunden.",
+      "Das ist ein Beispiel für bewusste Irreführung.",
+      "Dieses Video zeigt nur extreme Einzelfälle.",
+      "Achtung, diese Behauptung ist stark allgemein gehalten.",
+      "Das Posting provoziert Angst ohne Belege.",
+      "Dieses Video suggeriert eine Verschwörung.",
+      "Das ist eine gezielte Verdrehung von Fakten.",
+      "Dieses Posting arbeitet mit manipulativem Schnitt.",
+      "Achtung bei solchen pauschalen Anschuldigungen.",
+      "Dieses Video will vor allem geteilt werden, nicht verstanden.",
+      "Das ist ein sehr polarisiertes Narrativ.",
+      "Dieses Posting verdreht die tatsächliche Lage.",
+      "Hier wird mit extremen Formulierungen Angst erzeugt.",
+      "Das Video behauptet eine klare Schuldzuweisung ohne Basis.",
+      "Dieses Posting verzerrt Zahlen und Daten.",
+      "Achtung: starke Übertreibungen im Clip.",
+      "Dieses Video mischt Fakten und Fiktion geschickt.",
+      "Das ist ein Beispiel für bewusste Desinformation.",
+      "Dieses Posting vermittelt ein falsches Gesamtbild.",
+      "Achtung, hier fehlt die notwendige Quellenprüfung.",
+      "Das Video will starke Emotionen wecken.",
+      "Dieses Posting versucht, Gruppen zu stigmatisieren.",
+      "Dabei wird oft ein kleiner Teil generalisiert.",
+      "Dieses Video macht komplexe Themen simpel und falsch.",
+      "Das Posting nutzt Schockbilder ohne Kontext.",
+      "Achtung bei schnellen Schlussfolgerungen aus wenig.",
+      "Dieses Video streut Gerüchte als Fakten.",
+      "Das ist eine sehr manipulative Darstellung.",
+      "Dieses Posting erzeugt gezielt Unsicherheit.",
+      "Achtung: extreme Verallgemeinerungen sind nicht verlässlich.",
+      "Dieses Video behauptet Zusammenhänge ohne Beleg.",
+      "Das Posting benutzt suggestive Sprache zur Beeinflussung.",
+      "Dieses Video dramatisiert harmlose Ereignisse.",
+      "Achtung bei emotionaler Rhetorik ohne Fakten.",
+      "Dieses Posting vereinfacht Ursachen stark.",
+      "Das Video erzeugt Furcht durch Übertreibung.",
+      "Dieses Posting behauptet falsche Kausalitäten.",
+      "Das ist ein Beispiel für virale Falschinformation.",
+      "Dieses Video stellt Lügen als Wahrheiten dar.",
+      "Achtung: das ist eine bewusst irreführende Montage.",
+      "Dieses Posting bedient gezielt Vorurteile.",
+      "Das Video ist so geschnitten, dass es täuscht.",
+      "Dieses Posting schürt Misstrauen ohne Grund.",
+      "Achtung bei dramatischen Pauschalaussagen.",
+      "Dieses Video blendet wichtige Kontextinfos aus.",
+      "Das Posting will Polarisierung statt Aufklärung.",
+      "Dieses Video vermittelt ein verzerrtes Bild.",
+      "Achtung: es fehlen klare Quellenangaben.",
+      "Dieses Posting stellt unbelegte Thesen als Fakten dar.",
+      "Das Video benutzt Angst als Motivator.",
+      "Dieses Posting manipuliert mit selektiven Beispielen.",
+      "Achtung vor angeblichen ‚beweisen‘ ohne Transparenz.",
+      "Dieses Video versucht, einen Sündenbock zu etablieren.",
+      "Das Posting verdreht zeitliche Abläufe bewusst.",
+      "Dieses Video macht aus Unsicherheit pure Panik.",
+      "Achtung: starke Behauptungen brauchen belastbare Quellen.",
+      "Dieses Posting ist ein Paradebeispiel für Verzerrung.",
+      "Das Video beansprucht absolute Gewissheit ohne Basis.",
+      "Dieses Posting fördert polarisierende Narrative.",
+      "Achtung vor manipulativer Bildsprache ohne Kontext.",
+      "Dieses Video stellt Meinungen als Fakten dar.",
+      "Das Posting erzeugt gezielte Feindbilder.",
+      "Dieses Video ist ein Versuch, Emotionen zu instrumentalisieren.",
+      "Achtung: dieses Postformat ist oft irreführend.",
+      "Dieses Video vermischt Halbwahrheiten geschickt."
     ]
   }
 };
 
-/* ======================================================
-   DEEP COPY HELFER
-====================================================== */
+/* ===========================================
+   ORIGINAL POOLS SPEICHERN (zum Wiederherstellen)
+   - Kopie aller posts pro Level
+   =========================================== */
 
-function deepCopy(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-/* ======================================================
-   LEVEL START
-====================================================== */
-
-function startLevel() {
-  bubble = 80;
-  bubbleValue.textContent = bubble;
-
-  storyBox.textContent = levels[level].story;
-
-  feed.style.display = "block";
-  storyBox.style.display = "block";
-  win.style.display = "none";
-  gameOver.style.display = "none";
-
-  // Reset Pool für dieses Level
-  levels[level].posts = deepCopy(originalPools[level]);
-
-  renderPosts();
-}
-
-/* ======================================================
-   POSTS ANZEIGEN (keine Duplikate!)
-====================================================== */
-
-function renderPosts() {
-  feed.innerHTML = "";
-
-  let pool = levels[level].posts;
-
-  if (pool.length === 0) return;
-
-  let amount = Math.min(4, pool.length);
-  let usedThisRound = [];
-
-  while (usedThisRound.length < amount) {
-    let index = Math.floor(Math.random() * pool.length);
-    let text = pool[index];
-
-    // Wenn schon angezeigt → überspringen
-    if (usedThisRound.includes(text)) continue;
-
-    usedThisRound.push(text);
-
-    let div = document.createElement("div");
-    div.className = "post";
-    div.textContent = text;
-    div.dataset.effect = getEffect(text);
-
-    div.onclick = () => handlePostClick(text, div);
-
-    feed.appendChild(div);
-  }
-}
-
-/* ======================================================
-   EFFEKT ERKENNEN
-====================================================== */
-
-function getEffect(text) {
-  if (text.includes("Clickbait") || text.includes("Drama") || text.includes("Verdrehte") || text.includes("Manipulativ") || text.includes("Politisch"))
-    return +10;
-
-  if (text.includes("Werbung") || text.includes("Suggestiver"))
-    return +5;
-
-  if (text.includes("Fakten") || text.includes("Neutral") || text.includes("Sachlich") || text.includes("Objektiv"))
-    return -10;
-
-  if (text.includes("Wissenschaft") || text.includes("Analyse"))
-    return -15;
-
-  return -5;
-}
-
-/* ======================================================
-   POST KLICKEN
-====================================================== */
-
-function handlePostClick(text, div) {
-  let effect = Number(div.dataset.effect);
-
-  bubble = Math.min(100, Math.max(0, bubble + effect));
-  bubbleValue.textContent = bubble;
-
-  // Post dauerhaft aus dem Level-Pool löschen
-  let i = levels[level].posts.indexOf(text);
-  if (i !== -1) levels[level].posts.splice(i, 1);
-
-  div.remove();
-
-  if (bubble <= 0) {
-    nextLevel();
-    return;
-  }
-
-  if (bubble >= 100) {
-    triggerGameOver();
-    return;
-  }
-
-  renderPosts();
-}
-
-/* ======================================================
-   LEVEL WECHSEL
-====================================================== */
-
-function nextLevel() {
-  level++;
-  if (level > 3) {
-    feed.style.display = "none";
-    storyBox.style.display = "none";
-    win.style.display = "block";
-    return;
-  }
-
-  startLevel();
-}
-
-/* ======================================================
-   GAME OVER
-====================================================== */
-
-function triggerGameOver() {
-  feed.style.display = "none";
-  storyBox.style.display = "none";
-  gameOver.style.display = "block";
-  restartBtn.style.display = "block";
-}
-
-/* ======================================================
-   RESTART
-====================================================== */
-
-restartBtn.onclick = () => {
-  level = 1;
-  gameOver.style.display = "none";
-  restartBtn.style.display = "none";
-  startLevel();
-};
-
-/* ======================================================
-   INIT
-====================================================== */
-
-originalPools = deepCopy({
+let originalPools = deepCopy({
   1: levels[1].posts,
   2: levels[2].posts,
   3: levels[3].posts
 });
 
-startLevel();
-</script>
+/* ===========================================
+   LOGIK: START LEVEL / RENDER / CLICK HANDLER
+   =========================================== */
 
+function startLevel() {
+  bubble = 80;
+  bubbleValue.textContent = bubble;
+  storyBox.textContent = levels[level].story;
+
+  // Beim Start des Levels Pool wiederherstellen
+  levels[level].posts = deepCopy(originalPools[level]);
+
+  feed.style.display = 'block';
+  storyBox.style.display = 'block';
+  win.style.display = 'none';
+  gameOver.style.display = 'none';
+  restartBtn.style.display = 'none';
+
+  renderPosts();
+}
+
+/* renderPosts: zieht bis zu 4 verschiedene Posts, prüft Duplikate */
+function renderPosts() {
+  feed.innerHTML = '';
+  let pool = levels[level].posts;
+  if (!pool || pool.length === 0) return;
+
+  let amount = Math.min(4, pool.length);
+  let usedThisRound = [];
+
+  // solange wir weniger als amount im Feed haben
+  while (usedThisRound.length < amount) {
+    let idx = Math.floor(Math.random() * pool.length);
+    let text = pool[idx];
+
+    // falls zufällig schon ausgewählt, überspringen
+    if (usedThisRound.includes(text)) continue;
+
+    usedThisRound.push(text);
+
+    let div = document.createElement('div');
+    div.className = 'post';
+    div.textContent = text;
+    div.dataset.effect = getEffect(text);
+
+    // Bind text in Handler, damit wir den exakten Eintrag entfernen können
+    div.addEventListener('click', () => handlePostClick(text, div));
+
+    feed.appendChild(div);
+  }
+}
+
+/* Effekte werden automatisch anhand einfacher Stichwörter zugewiesen.
+   Du kannst diese Regeln später anpassen oder Posts manuell mit Werten versehen. */
+function getEffect(text) {
+  const t = text.toLowerCase();
+  // starke manipulative / polarisierende Marker
+  if (t.includes('manipul') || t.includes('falsch') || t.includes('verzerr') || t.includes('angst') || t.includes('panik') || t.includes('verschwörung')) return +15;
+  if (t.includes('verdreh') || t.includes('polaris') || t.includes('feind') || t.includes('stark') || t.includes('dramatis')) return +10;
+  if (t.includes('werbung') || t.includes('suggest') || t.includes('clickbait') ) return +5;
+  if (t.includes('fakten') || t.includes('neutral') || t.includes('sachlich') || t.includes('objektiv')) return -10;
+  if (t.includes('wissenschaft') || t.includes('analyse') || t.includes('research') || t.includes('kritisch')) return -15;
+  // Standard: kleine Entfilterung durch harmlosen Content
+  return -5;
+}
+
+/* handle click: ändert bubble, entfernt den Post dauerhaft aus dem Pool, rendert neu */
+function handlePostClick(text, div) {
+  let effect = Number(div.dataset.effect) || 0;
+  bubble = Math.min(100, Math.max(0, bubble + effect));
+  bubbleValue.textContent = bubble;
+
+  // Post aus Pool entfernen (erste Vorkommen)
+  let pool = levels[level].posts;
+  let i = pool.indexOf(text);
+  if (i !== -1) pool.splice(i, 1);
+
+  // entferntes Element aus DOM
+  if (div && div.parentNode) div.parentNode.removeChild(div);
+
+  // Bedingungen prüfen
+  if (bubble <= 0) {
+    nextLevel();
+    return;
+  }
+  if (bubble >= 100) {
+    triggerGameOver();
+    return;
+  }
+  // Ansonsten neue Posts anzeigen
+  renderPosts();
+}
+
+/* Wechsel zum nächsten Level */
+function nextLevel() {
+  level++;
+  if (level > 3) {
+    feed.style.display = 'none';
+    storyBox.style.display = 'none';
+    win.style.display = 'block';
+    return;
+  }
+  // Beim Levelwechsel Pools wiederherstellen (alle Levels frisch setzen)
+  levels[1].posts = deepCopy(originalPools[1]);
+  levels[2].posts = deepCopy(originalPools[2]);
+  levels[3].posts = deepCopy(originalPools[3]);
+  startLevel();
+}
+
+/* Game over */
+function triggerGameOver() {
+  feed.style.display = 'none';
+  storyBox.style.display = 'none';
+  gameOver.style.display = 'block';
+  restartBtn.style.display = 'block';
+}
+
+/* Restart Button */
+restartBtn.addEventListener('click', () => {
+  level = 1;
+  levels[1].posts = deepCopy(originalPools[1]);
+  levels[2].posts = deepCopy(originalPools[2]);
+  levels[3].posts = deepCopy(originalPools[3]);
+  gameOver.style.display = 'none';
+  restartBtn.style.display = 'none';
+  startLevel();
+});
+
+/* Start des Spiels */
+startLevel();
+
+</script>
 </body>
 </html>
